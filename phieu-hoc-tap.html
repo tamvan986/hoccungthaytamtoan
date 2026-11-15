@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phiếu Học Tập Toán THPT — Thư Viện | Trợ Lý Giáo Viên</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#0a1120;color:#e8eefb;min-height:100vh}
+  header{position:sticky;top:0;z-index:10;background:rgba(10,17,32,.94);border-bottom:1px solid #22345c;padding:10px 16px;display:flex;gap:12px;align-items:center}
+  .logo{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#0891b2,#2563eb);display:flex;align-items:center;justify-content:center;font-size:19px}
+  header b{font-size:15.5px} header span{color:#93a5c8;font-size:12px;display:block}
+  main{max-width:980px;margin:0 auto;padding:20px 14px 50px}
+  h1{font-size:clamp(21px,3.6vw,30px);text-align:center}
+  .sub{text-align:center;color:#93a5c8;margin:6px 0 20px;font-size:14px}
+  .grade{background:#101a2e;border:1px solid #22345c;border-radius:18px;padding:18px;margin-bottom:16px}
+  .grade h2{font-size:18px;color:#7dd3fc;margin-bottom:12px}
+  .lessons{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px}
+  .lesson{background:#0d1730;border:1px solid #22345c;border-radius:13px;padding:13px 14px;font-size:14.5px;line-height:1.45}
+  .lesson small{display:block;color:#93a5c8;margin-top:4px;font-size:12px}
+  .lesson.ready{cursor:pointer;border-color:#0e7490}
+  .lesson.ready:hover{border-color:#22d3ee;background:#0b2036}
+  .lesson.ready small{color:#67e8f9}
+  /* Viewer */
+  #viewer{display:none}
+  .vbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .vbar .t{font-weight:700;font-size:17px}
+  .chip{background:#131f38;border:1px solid #22345c;border-radius:999px;padding:6px 13px;font-size:13px}
+  .chip b{color:#7dd3fc}
+  .fbtn{background:#131f38;border:1px solid #22345c;color:#e8eefb;border-radius:9px;padding:6px 12px;cursor:pointer;font-size:14px}
+  .qcard{background:#101a2e;border:1px solid #22345c;border-radius:18px;padding:22px}
+  .qtxt{line-height:1.65;margin-bottom:16px}
+  .opts{display:flex;flex-direction:column;gap:10px}
+  .opt{background:#0d1730;border:1.5px solid #2b4479;color:#e8eefb;border-radius:12px;padding:12px 15px;text-align:left;cursor:pointer;line-height:1.5}
+  .opt:hover:not(:disabled){border-color:#38bdf8}
+  .opt .L{color:#7dd3fc;font-weight:800;margin-right:8px}
+  .opt.right{background:#14532d!important;border-color:#4ade80!important}
+  .opt.wrong{background:#7f1d1d!important;border-color:#f87171!important}
+  .sol{display:none;background:#0a1428;border:1px solid #2b4479;border-left:4px solid #f59e0b;border-radius:10px;padding:13px 15px;margin-top:14px;line-height:1.65}
+  .sol.show{display:block}
+  .nav{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .nav button{flex:1;min-width:120px;background:#131f38;border:1px solid #2b4479;color:#e8eefb;border-radius:11px;padding:11px;font-size:14.5px;cursor:pointer}
+  .nav button.main{background:linear-gradient(90deg,#0891b2,#2563eb);font-weight:700;border:0}
+  .prog{height:8px;background:#131f38;border-radius:99px;overflow:hidden;margin-bottom:14px}
+  .prog i{display:block;height:100%;background:linear-gradient(90deg,#0891b2,#38bdf8);transition:.3s}
+</style>
+</head>
+<body>
+<header><div class="logo">📝</div><div><b>PHIẾU HỌC TẬP MÔN TOÁN THPT</b><span>Thư viện phiếu theo bài học — trình chiếu từng câu, có đáp án và lời giải</span></div></header>
+<main>
+  <div id="library">
+    <h1>THƯ VIỆN PHIẾU HỌC TẬP</h1>
+    <p class="sub">Chọn một bài học để mở phiếu. Phiếu mở ở chế độ trình chiếu: xem từng câu, học sinh trả lời, bấm hiện đáp án và lời giải ngay trên lớp.</p>
+    <div id="grades"></div>
+  </div>
+
+  <div id="viewer">
+    <div class="vbar">
+      <button class="fbtn" onclick="exitViewer()">✕ Thoát trình chiếu</button>
+      <span class="t" id="vTitle"></span>
+      <span class="chip">Câu <b id="vPos">1/10</b></span>
+      <span class="chip">Đúng <b id="vScore">0</b></span>
+      <span class="chip">⏱ <b id="vTime">00:00</b></span>
+      <span style="margin-left:auto"></span>
+      <button class="fbtn" onclick="fontSize(-1)">A−</button>
+      <button class="fbtn" onclick="fontSize(1)">A+</button>
+    </div>
+    <div class="prog"><i id="vProg" style="width:10%"></i></div>
+    <div class="qcard" id="qcard">
+      <div class="qtxt" id="vQ"></div>
+      <div class="opts" id="vOpts"></div>
+      <div class="sol" id="vSol"></div>
+      <div class="nav">
+        <button onclick="move(-1)">← Câu trước</button>
+        <button onclick="toggleSol(false)">Hiện đáp án</button>
+        <button onclick="toggleSol(true)">Xem lời giải</button>
+        <button class="main" onclick="move(1)">Câu sau →</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const LIB=[
+ {grade:'Toán 10', lessons:[
+   {t:'Mệnh đề', ready:'menh-de'},
+   {t:'Tập hợp và các phép toán trên tập hợp', ready:'tap-hop'},
+   {t:'Bất phương trình bậc nhất hai ẩn', ready:'bpt-hai-an'},
+   {t:'Hệ bất phương trình bậc nhất hai ẩn', ready:'he-bpt'},
+   {t:'Giá trị lượng giác của một góc từ 0° đến 180°', ready:'gtlg-10'},
+   {t:'Hệ thức lượng trong tam giác', ready:'he-thuc-luong'},
+   {t:'Vectơ: các khái niệm mở đầu', ready:'vecto-khai-niem'},
+   {t:'Tổng và hiệu của hai vectơ · Tích của một vectơ với một số', ready:'tong-hieu-vecto'},
+   {t:'Tích vô hướng của hai vectơ', ready:'tich-vo-huong'},
+   {t:'Số gần đúng và sai số', ready:'so-gan-dung'},
+   {t:'Các số đặc trưng đo xu thế trung tâm', ready:'xu-the-trung-tam'},
+   {t:'Các số đặc trưng đo độ phân tán', ready:'do-phan-tan'},
+ ]},
+ {grade:'Toán 11', lessons:[
+   {t:'Góc lượng giác · Giá trị lượng giác của góc lượng giác', ready:'goc-luong-giac'},
+   {t:'Công thức lượng giác', ready:'cong-thuc-lg'},
+   {t:'Hàm số lượng giác', ready:'ham-so-lg'},
+   {t:'Phương trình lượng giác cơ bản', ready:'ptlg-11'},
+   {t:'Dãy số', ready:'day-so'},
+   {t:'Cấp số cộng', ready:'csc-11'},
+   {t:'Cấp số nhân', ready:'csn-11'},
+   {t:'Mẫu số liệu ghép nhóm và các số đặc trưng', ready:'mau-ghep-nhom'},
+   {t:'Đường thẳng và mặt phẳng trong không gian', ready:'dt-mp'},
+   {t:'Hai đường thẳng song song · Đường thẳng song song với mặt phẳng', ready:'song-song'},
+   {t:'Giới hạn của dãy số', ready:'gh-day-so'},
+   {t:'Giới hạn của hàm số · Hàm số liên tục', ready:'gh-ham-so'},
+ ]},
+ {grade:'Toán 12', lessons:[
+   {t:'Tính đơn điệu và cực trị của hàm số', ready:'cuc-tri-12'},
+   {t:'Giá trị lớn nhất và giá trị nhỏ nhất của hàm số', ready:'gtln-gtnn'},
+   {t:'Đường tiệm cận của đồ thị hàm số', ready:'tiem-can'},
+   {t:'Đồ thị của hàm số', ready:'do-thi-hs'},
+   {t:'Vectơ và hệ trục tọa độ trong không gian', ready:'vecto-kg'},
+   {t:'Nguyên hàm', ready:'nguyen-ham-12'},
+   {t:'Tích phân và ứng dụng của tích phân', ready:'tich-phan'},
+   {t:'Phương trình mặt phẳng', ready:'pt-mat-phang'},
+   {t:'Phương trình đường thẳng trong không gian', ready:'pt-duong-thang'},
+   {t:'Phương trình mặt cầu', ready:'mat-cau'},
+   {t:'Xác suất có điều kiện', ready:'xs-dieu-kien'},
+   {t:'Công thức xác suất toàn phần · Công thức Bayes', ready:'xs-toan-phan'},
+ ]},
+];
+const SHEETS={
+'menh-de':{title:'Toán 10 · Mệnh đề',qs:[
+ {q:'Câu nào sau đây là một mệnh đề?',o:['Ôi, bài toán khó quá!','Số 12 là hợp số.','Em đã làm bài tập chưa?','Hãy giữ trật tự!'],a:1,s:'Mệnh đề là câu khẳng định có tính đúng hoặc sai. Chỉ có câu "Số 12 là hợp số" là câu khẳng định (và nó đúng vì 12 = 2² · 3). Các câu còn lại là câu cảm thán, câu hỏi và câu cầu khiến.'},
+ {q:'Phủ định của mệnh đề "8 là số nguyên tố" là mệnh đề nào?',o:['8 là hợp số','8 không là số nguyên tố','8 là số chẵn','8 không phải là số tự nhiên'],a:1,s:'Phủ định của mệnh đề P là mệnh đề "không phải P", nên phủ định là "8 không là số nguyên tố".'},
+ {q:'Mệnh đề nào sau đây là mệnh đề đúng?',o:['16 là số chính phương','2 là hợp số','1 là số nguyên tố','9 là số nguyên tố'],a:0,s:'16 = 4² nên là số chính phương. Số 2 là số nguyên tố, 1 không là số nguyên tố cũng không là hợp số, 9 = 3² là hợp số.'},
+ {q:'Mệnh đề đảo của "Nếu trời mưa thì đường ướt" là mệnh đề nào?',o:['Nếu đường ướt thì trời mưa','Nếu trời không mưa thì đường không ướt','Trời mưa khi và chỉ khi đường ướt','Nếu đường không ướt thì trời không mưa'],a:0,s:'Mệnh đề đảo của P ⇒ Q là Q ⇒ P: đổi vị trí giả thiết và kết luận cho nhau.'},
+ {q:'Phủ định của mệnh đề "Mọi số chẵn đều chia hết cho 4" là mệnh đề nào?',o:['Mọi số chẵn đều không chia hết cho 4','Không có số chẵn nào chia hết cho 4','Có số chẵn không chia hết cho 4','Có số chẵn chia hết cho 4'],a:2,s:'Phủ định của "mọi x đều có tính chất P" là "có x không có tính chất P". Chẳng hạn số 6 là số chẵn nhưng không chia hết cho 4.'},
+ {q:'Mệnh đề "Tồn tại số thực x sao cho x² + 2x + 5 = 0" là mệnh đề thế nào?',o:['Đúng','Sai','Không phải là mệnh đề','Không xác định được'],a:1,s:'x² + 2x + 5 = (x + 1)² + 4 > 0 với mọi x nên phương trình vô nghiệm. Mệnh đề tồn tại này là sai.'},
+ {q:'Cho P và Q đều là mệnh đề đúng. Mệnh đề kéo theo P ⇒ Q có giá trị thế nào?',o:['Đúng','Sai','Vừa đúng vừa sai','Không phải là mệnh đề'],a:0,s:'Mệnh đề P ⇒ Q chỉ sai khi P đúng và Q sai. Ở đây cả hai đều đúng nên P ⇒ Q đúng.'},
+ {q:'"Một tứ giác có 4 cạnh bằng nhau và có một góc vuông" là điều kiện gì để tứ giác đó là hình vuông?',o:['Điều kiện cần','Điều kiện đủ','Vừa là điều kiện cần, vừa là điều kiện đủ','Không phải điều kiện cần cũng không phải điều kiện đủ'],a:1,s:'Tứ giác có 4 cạnh bằng nhau và một góc vuông thì chắc chắn là hình vuông, nên đây là điều kiện đủ. Nó không phải điều kiện cần theo đúng cách phát biểu này vì hình vuông được định nghĩa qua các dấu hiệu tương đương khác nhau.'},
+ {q:'Mệnh đề "Tồn tại số tự nhiên x sao cho x + 1 = 0" là mệnh đề thế nào?',o:['Đúng','Không phải là mệnh đề','Sai','Đúng với x = 0'],a:2,s:'Với mọi số tự nhiên x, x + 1 ≥ 1 > 0 nên không tồn tại x như vậy. Mệnh đề sai.'},
+ {q:'Phủ định của mệnh đề "Có ít nhất một học sinh trong lớp vắng mặt hôm nay" là mệnh đề nào?',o:['Mọi học sinh trong lớp đều có mặt hôm nay','Có học sinh trong lớp có mặt hôm nay','Mọi học sinh trong lớp đều vắng mặt hôm nay','Có ít nhất một học sinh có mặt hôm nay'],a:0,s:'Phủ định của "có ít nhất một học sinh vắng mặt" là "không có học sinh nào vắng mặt", tức mọi học sinh đều có mặt.'},
+]},
+'gtlg-10':{title:'Toán 10 · Giá trị lượng giác của một góc từ 0° đến 180°',qs:[
+ {q:'Giá trị của sin 90° bằng:',o:['0','1/2','√3/2','1'],a:3,s:'Trên đường tròn lượng giác, góc 90° ứng với điểm (0; 1) nên sin 90° = 1.'},
+ {q:'Giá trị của cos 180° bằng:',o:['−1','0','1','1/2'],a:0,s:'Góc 180° ứng với điểm (−1; 0) nên cos 180° = −1.'},
+ {q:'Giá trị của tan 45° bằng:',o:['1/√3','√3','1','0'],a:2,s:'tan 45° = sin 45° / cos 45° = 1.'},
+ {q:'Giá trị của sin²30° + cos²30° bằng:',o:['1/2','1','3/2','0'],a:1,s:'Với mọi góc α, sin²α + cos²α = 1.'},
+ {q:'Cho góc nhọn α có sin α = 3/5. Giá trị của cos α bằng:',o:['3/5','5/4','4/5','2/5'],a:2,s:'cos²α = 1 − sin²α = 1 − 9/25 = 16/25. Vì α nhọn nên cos α > 0, do đó cos α = 4/5.'},
+ {q:'Giá trị của cos 120° bằng:',o:['1/2','−1/2','√3/2','−√3/2'],a:1,s:'cos 120° = −cos 60° = −1/2 (hai góc bù nhau có cos đối nhau).'},
+ {q:'Giá trị của sin 150° bằng:',o:['−1/2','√3/2','1/2','1'],a:2,s:'sin 150° = sin 30° = 1/2 (hai góc bù nhau có sin bằng nhau).'},
+ {q:'Cho góc α tù (90° < α < 180°). Khẳng định nào đúng?',o:['sin α < 0','tan α > 0','cos α > 0','cos α < 0'],a:3,s:'Với góc tù, điểm biểu diễn nằm ở nửa đường tròn phía trái: hoành độ âm nên cos α < 0, tung độ dương nên sin α > 0, và tan α < 0.'},
+ {q:'Giá trị của tan 135° bằng:',o:['−1','1','√3','−√3'],a:0,s:'tan 135° = −tan 45° = −1.'},
+ {q:'Cho góc tù α có cos α = −5/13. Giá trị của sin α bằng:',o:['−12/13','12/13','5/13','13/12'],a:1,s:'sin²α = 1 − 25/169 = 144/169. Góc tù có sin dương nên sin α = 12/13.'},
+]},
+'ptlg-11':{title:'Toán 11 · Phương trình lượng giác cơ bản',qs:[
+ {q:'Phương trình sin x = 0 có nghiệm là:',o:['x = π/2 + kπ','x = k2π','x = kπ','x = π + k2π'],a:2,s:'sin x = 0 tại các điểm x = 0, ±π, ±2π, ... nên nghiệm là x = kπ, k ∈ ℤ.'},
+ {q:'Phương trình cos x = 1 có nghiệm là:',o:['x = kπ','x = k2π','x = π/2 + k2π','x = π + kπ'],a:1,s:'cos x = 1 tại x = 0, ±2π, ... nên nghiệm là x = k2π, k ∈ ℤ.'},
+ {q:'Phương trình tan x = 1 có nghiệm là:',o:['x = π/4 + k2π','x = π/4 + kπ','x = 3π/4 + kπ','x = kπ/4'],a:1,s:'tan x có chu kì π và tan(π/4) = 1 nên nghiệm là x = π/4 + kπ, k ∈ ℤ.'},
+ {q:'Phương trình sin x = 1/2 có nghiệm là:',o:['x = π/6 + k2π hoặc x = 5π/6 + k2π','x = π/6 + kπ','x = ±π/6 + k2π','x = π/3 + k2π hoặc x = 2π/3 + k2π'],a:0,s:'sin x = sin(π/6) nên x = π/6 + k2π hoặc x = π − π/6 + k2π = 5π/6 + k2π.'},
+ {q:'Phương trình cos x = −1 có nghiệm là:',o:['x = k2π','x = π/2 + kπ','x = π + k2π','x = −1 + k2π'],a:2,s:'cos x = −1 tại x = π, −π, 3π, ... nên nghiệm là x = π + k2π, k ∈ ℤ.'},
+ {q:'Phương trình nào sau đây vô nghiệm?',o:['sin x = 1','cos x = 0','tan x = 5','sin x = 2'],a:3,s:'Vì −1 ≤ sin x ≤ 1 với mọi x nên phương trình sin x = 2 vô nghiệm.'},
+ {q:'Các nghiệm của phương trình cos x = cos(π/3) thuộc đoạn [0; 2π] là:',o:['x = π/3','x = π/3 và x = 5π/3','x = π/3 và x = 2π/3','x = 5π/3'],a:1,s:'cos x = cos(π/3) cho x = ±π/3 + k2π. Trong [0; 2π] ta được x = π/3 và x = 2π − π/3 = 5π/3.'},
+ {q:'Phương trình sin 2x = 0 có nghiệm là:',o:['x = kπ','x = π/2 + kπ','x = kπ/2','x = k2π'],a:2,s:'sin 2x = 0 khi 2x = kπ, tức x = kπ/2, k ∈ ℤ.'},
+ {q:'Phương trình tan x = √3 có nghiệm là:',o:['x = π/3 + kπ','x = π/6 + kπ','x = π/3 + k2π','x = 2π/3 + kπ'],a:0,s:'tan(π/3) = √3 và tan có chu kì π nên nghiệm là x = π/3 + kπ, k ∈ ℤ.'},
+ {q:'Phương trình cot x = 0 có nghiệm là:',o:['x = kπ','x = π/2 + kπ','x = k2π','x = π/4 + kπ'],a:1,s:'cot x = 0 khi cos x = 0 (và sin x ≠ 0), tức x = π/2 + kπ, k ∈ ℤ.'},
+]},
+'csc-11':{title:'Toán 11 · Cấp số cộng',qs:[
+ {q:'Cấp số cộng có số hạng đầu u₁ = 3 và công sai d = 2. Số hạng u₅ bằng:',o:['9','13','11','7'],a:2,s:'u₅ = u₁ + 4d = 3 + 4 · 2 = 11.'},
+ {q:'Dãy số 2; 5; 8; 11; ... là cấp số cộng có công sai bằng:',o:['2','5','3','−3'],a:2,s:'d = 5 − 2 = 3.'},
+ {q:'Cấp số cộng có u₁ = −1 và công sai d = 3. Số hạng tổng quát là:',o:['uₙ = 3n − 4','uₙ = 3n − 1','uₙ = −1 + 3n','uₙ = 2n − 3'],a:0,s:'uₙ = u₁ + (n − 1)d = −1 + 3(n − 1) = 3n − 4.'},
+ {q:'Tổng 10 số hạng đầu của cấp số cộng có u₁ = 1, d = 2 bằng:',o:['90','110','100','120'],a:2,s:'S₁₀ = 10/2 · [2 · 1 + 9 · 2] = 5 · 20 = 100.'},
+ {q:'Xen vào giữa 3 và 15 một số hạng để được cấp số cộng có ba số hạng 3; x; 15. Giá trị của x là:',o:['6','9','10','12'],a:1,s:'Trong cấp số cộng, số hạng giữa bằng trung bình cộng hai số bên cạnh: x = (3 + 15)/2 = 9.'},
+ {q:'Cấp số cộng có u₂ = 5 và u₆ = 17. Công sai của cấp số cộng bằng:',o:['2','4','3','12'],a:2,s:'u₆ = u₂ + 4d nên d = (17 − 5)/4 = 3.'},
+ {q:'Cấp số cộng có u₁ = 4 và u₁₀ = 40. Tổng S₁₀ bằng:',o:['220','200','440','180'],a:0,s:'S₁₀ = 10 · (u₁ + u₁₀)/2 = 10 · 44/2 = 220.'},
+ {q:'Ba số x; 6; y theo thứ tự lập thành một cấp số cộng khi và chỉ khi:',o:['x · y = 36','x + y = 6','x − y = 12','x + y = 12'],a:3,s:'Điều kiện là 2 · 6 = x + y, tức x + y = 12.'},
+ {q:'Cấp số cộng có u₁ = 20 và công sai d = −3. Số hạng u₈ bằng:',o:['−4','1','−1','−7'],a:2,s:'u₈ = 20 + 7 · (−3) = 20 − 21 = −1.'},
+ {q:'Tổng của các số tự nhiên từ 1 đến 100 bằng:',o:['5000','5050','4950','5100'],a:1,s:'S = 100 · (1 + 100)/2 = 5050.'},
+]},
+'cuc-tri-12':{title:'Toán 12 · Tính đơn điệu và cực trị của hàm số',qs:[
+ {q:'Hàm số y = x³ − 3x² đồng biến trên khoảng nào?',o:['(0; 2)','(2; +∞)','(−2; 0)','(−∞; 2)'],a:1,s:'y′ = 3x² − 6x = 3x(x − 2) > 0 khi x < 0 hoặc x > 2. Trong các phương án chỉ có (2; +∞) là khoảng đồng biến.'},
+ {q:'Hàm số y = x³ − 3x² đạt cực đại tại điểm nào?',o:['x = 2','x = 0','x = 1','x = −2'],a:1,s:'y′ = 0 tại x = 0 và x = 2. Đạo hàm đổi dấu từ dương sang âm tại x = 0 nên hàm số đạt cực đại tại x = 0.'},
+ {q:'Hàm số y = x⁴ − 2x² + 1 có bao nhiêu điểm cực trị?',o:['1','2','3','0'],a:2,s:'y′ = 4x³ − 4x = 4x(x² − 1) có ba nghiệm phân biệt −1; 0; 1 và đổi dấu tại cả ba điểm nên có 3 điểm cực trị.'},
+ {q:'Hàm số y = (x + 1)/(x − 2) trên từng khoảng xác định thì:',o:['Đồng biến','Nghịch biến','Không đổi','Vừa đồng biến vừa nghịch biến'],a:1,s:'y′ = −3/(x − 2)² < 0 trên từng khoảng xác định nên hàm số nghịch biến.'},
+ {q:'Giá trị cực tiểu của hàm số y = x³ − 3x bằng:',o:['2','0','−2','−1'],a:2,s:'y′ = 3x² − 3 = 0 tại x = ±1. Cực tiểu đạt tại x = 1 với giá trị y(1) = 1 − 3 = −2.'},
+ {q:'Hàm số y = −x² + 4x − 1 đồng biến trên khoảng nào?',o:['(2; +∞)','(−∞; 2)','(0; 4)','(−2; 2)'],a:1,s:'y′ = −2x + 4 > 0 khi x < 2 nên hàm số đồng biến trên (−∞; 2).'},
+ {q:'Cho hàm số y = f(x) có f′(x) = x(x − 2)². Số điểm cực trị của hàm số là:',o:['0','2','3','1'],a:3,s:'f′ đổi dấu chỉ tại x = 0; tại x = 2 đạo hàm không đổi dấu (do thừa số mũ chẵn) nên chỉ có 1 điểm cực trị.'},
+ {q:'Hàm số y = x − ln x trên khoảng (0; +∞) đạt cực tiểu tại điểm nào?',o:['x = 1','x = e','x = 1/e','Không có cực tiểu'],a:0,s:'y′ = 1 − 1/x = 0 tại x = 1, đạo hàm đổi dấu từ âm sang dương nên x = 1 là điểm cực tiểu.'},
+ {q:'Hàm số nào sau đây đồng biến trên ℝ?',o:['y = x⁴','y = −x³','y = x³ + x','y = 1/x'],a:2,s:'Với y = x³ + x, y′ = 3x² + 1 > 0 với mọi x nên hàm số đồng biến trên ℝ.'},
+ {q:'Giá trị cực đại của hàm số y = x³ − 3x + 2 bằng:',o:['0','4','−2','2'],a:1,s:'Cực đại đạt tại x = −1, giá trị y(−1) = −1 + 3 + 2 = 4.'},
+]},
+'nguyen-ham-12':{title:'Toán 12 · Nguyên hàm',qs:[
+ {q:'∫ 2x dx bằng:',o:['2 + C','x² + C','2x² + C','x + C'],a:1,s:'Nguyên hàm của 2x là x² + C vì (x²)′ = 2x.'},
+ {q:'∫ cos x dx bằng:',o:['−sin x + C','sin x + C','cos x + C','−cos x + C'],a:1,s:'(sin x)′ = cos x nên ∫ cos x dx = sin x + C.'},
+ {q:'∫ eˣ dx bằng:',o:['eˣ + C','x · eˣ + C','eˣ⁺¹/(x + 1) + C','ln x + C'],a:0,s:'(eˣ)′ = eˣ nên nguyên hàm của eˣ là chính nó cộng hằng số C.'},
+ {q:'∫ (1/x) dx bằng (với x > 0):',o:['−1/x² + C','1/x² + C','ln x + C','x ln x + C'],a:2,s:'(ln x)′ = 1/x với x > 0 nên ∫ (1/x) dx = ln x + C.'},
+ {q:'∫ x³ dx bằng:',o:['3x² + C','x⁴/4 + C','x⁴ + C','4x³ + C'],a:1,s:'∫ xⁿ dx = xⁿ⁺¹/(n + 1) + C với n = 3 cho x⁴/4 + C.'},
+ {q:'∫ 5 dx bằng:',o:['5 + C','0','5x + C','x + C'],a:2,s:'Nguyên hàm của hằng số 5 là 5x + C.'},
+ {q:'∫ sin x dx bằng:',o:['cos x + C','−cos x + C','−sin x + C','tan x + C'],a:1,s:'(−cos x)′ = sin x nên ∫ sin x dx = −cos x + C.'},
+ {q:'∫ (2x + 3) dx bằng:',o:['x² + 3x + C','2x² + 3x + C','x² + 3 + C','2 + C'],a:0,s:'∫ (2x + 3) dx = x² + 3x + C. Kiểm tra: (x² + 3x)′ = 2x + 3.'},
+ {q:'∫ (x² + x) dx bằng:',o:['2x + 1 + C','x³ + x² + C','x³/3 + x²/2 + C','x³/3 + x + C'],a:2,s:'Tách từng hạng tử: ∫ x² dx = x³/3 và ∫ x dx = x²/2.'},
+ {q:'Hàm số F(x) = x² là một nguyên hàm của hàm số nào?',o:['f(x) = x','f(x) = 2x','f(x) = x²/2','f(x) = 2'],a:1,s:'F′(x) = (x²)′ = 2x nên F là nguyên hàm của f(x) = 2x.'},
+]},
+'tap-hop':{title:'Toán 10 · Tập hợp và các phép toán trên tập hợp',qs:[
+ {q:'Cho A = {1; 2; 3; 4} và B = {3; 4; 5}. Tập hợp A ∩ B là:',o:['{3; 4}','{1; 2}','{1; 2; 3; 4; 5}','{5}'],a:0,s:'A ∩ B gồm các phần tử vừa thuộc A vừa thuộc B, đó là 3 và 4.'},
+ {q:'Với A và B như câu 1, tập hợp A ∪ B là:',o:['{3; 4}','{1; 2; 5}','{1; 2; 3; 4; 5}','{1; 2; 3; 4}'],a:2,s:'A ∪ B gồm mọi phần tử thuộc ít nhất một trong hai tập: 1; 2; 3; 4; 5.'},
+ {q:'Với A và B như câu 1, tập hợp A \\ B là:',o:['{5}','{1; 2}','{3; 4}','{1; 2; 5}'],a:1,s:'A \\ B gồm các phần tử thuộc A nhưng không thuộc B, đó là 1 và 2.'},
+ {q:'Tập hợp {x ∈ ℕ | x < 5} có bao nhiêu phần tử?',o:['4','6','5','Vô số'],a:2,s:'Các số tự nhiên nhỏ hơn 5 là 0; 1; 2; 3; 4, gồm 5 phần tử.'},
+ {q:'Cho A = [1; 5] và B = (3; 7]. Tập hợp A ∩ B là:',o:['[1; 7]','(3; 5]','[3; 5]','(1; 3)'],a:1,s:'Giao của hai khoảng là phần chung: từ sau 3 tới 5, tức (3; 5].'},
+ {q:'Cho A = (−∞; 2] và B = [0; +∞). Tập hợp A ∪ B là:',o:['[0; 2]','(−∞; +∞) tức ℝ','(−∞; 0] ∪ [2; +∞)','{0; 2}'],a:1,s:'Mọi số thực đều thuộc ít nhất một trong hai tập: số nhỏ hơn 0 thuộc A, số lớn hơn 2 thuộc B, còn lại thuộc cả hai. Vậy hợp là ℝ.'},
+ {q:'Tập hợp nào sau đây là tập hợp rỗng?',o:['{x ∈ ℝ | x² = −1}','{x ∈ ℕ | x ≤ 0}','{x ∈ ℚ | x² = 4}','{x ∈ ℝ | |x| = 1}'],a:0,s:'Phương trình x² = −1 vô nghiệm thực nên tập hợp rỗng. Các tập còn lại lần lượt là {0}, {−2; 2} và {−1; 1}.'},
+ {q:'Tập hợp A = {a; b; c; d} có bao nhiêu tập con?',o:['8','12','4','16'],a:3,s:'Tập hợp có n phần tử thì có 2ⁿ tập con. Với n = 4, số tập con là 2⁴ = 16.'},
+ {q:'Cho A = {1; 2} và B = {1; 2; 3}. Khẳng định nào đúng?',o:['B ⊂ A','A ⊂ B','A = B','A ∩ B = ∅'],a:1,s:'Mọi phần tử của A đều thuộc B nên A ⊂ B.'},
+ {q:'Cho tập vũ trụ U = {1; 2; 3; 4; 5} và A = {2; 4}. Phần bù của A trong U là:',o:['{2; 4}','{1; 3; 5}','{1; 2; 3; 4; 5}','∅'],a:1,s:'Phần bù gồm các phần tử của U không thuộc A: 1; 3; 5.'},
+]},
+'bpt-hai-an':{title:'Toán 10 · Bất phương trình bậc nhất hai ẩn',qs:[
+ {q:'Bất phương trình nào sau đây là bất phương trình bậc nhất hai ẩn?',o:['x² + y > 1','x + 2y ≤ 3','xy < 2','x + y + z > 0'],a:1,s:'Bất phương trình bậc nhất hai ẩn có dạng ax + by ≤ c (hoặc <, ≥, >) với hai ẩn x, y ở bậc nhất. Chỉ phương án thứ hai thỏa mãn.'},
+ {q:'Cặp số (1; 2) là nghiệm của bất phương trình nào?',o:['x + y > 5','2x − y < 0','x − 2y ≥ 0','x + 2y ≤ 5'],a:3,s:'Thay x = 1, y = 2: 1 + 2 · 2 = 5 ≤ 5 đúng. Các phương án còn lại cho kết quả sai: 3 > 5 sai; 0 < 0 sai; −3 ≥ 0 sai.'},
+ {q:'Miền nghiệm của bất phương trình x ≥ 0 là:',o:['Nửa mặt phẳng bên trái trục tung','Nửa mặt phẳng bên phải trục tung, kể cả trục tung','Nửa mặt phẳng phía trên trục hoành','Toàn bộ mặt phẳng'],a:1,s:'x ≥ 0 là các điểm có hoành độ không âm, tức nửa mặt phẳng bên phải trục tung kể cả trục tung.'},
+ {q:'Điểm (0; 0) thuộc miền nghiệm của bất phương trình nào?',o:['x + y < −1','2x + 3y ≥ 1','x − y > 2','3x + 2y ≤ 6'],a:3,s:'Thay (0; 0): 0 ≤ 6 đúng. Các phương án còn lại đều sai tại (0; 0).'},
+ {q:'Cặp số nào là nghiệm của bất phương trình 2x + y < 4?',o:['(2; 1)','(1; 1)','(0; 5)','(3; 0)'],a:1,s:'Với (1; 1): 2 · 1 + 1 = 3 < 4 đúng. Các cặp còn lại cho giá trị 5, 5 và 6, đều không nhỏ hơn 4.'},
+ {q:'Đường thẳng biên của miền nghiệm của bất phương trình x − y + 2 ≥ 0 là đường thẳng:',o:['x − y + 2 = 0','x + y + 2 = 0','x − y = 2','y = x − 2'],a:0,s:'Đường thẳng biên thu được bằng cách thay dấu bất đẳng thức bởi dấu bằng: x − y + 2 = 0.'},
+ {q:'Miền nghiệm của bất phương trình y ≤ 2x là:',o:['Nửa mặt phẳng phía trên đường thẳng y = 2x','Nửa mặt phẳng phía dưới đường thẳng y = 2x, kể cả đường thẳng đó','Nửa mặt phẳng bên trái đường thẳng y = 2x','Đường thẳng y = 2x'],a:1,s:'Các điểm thỏa mãn y ≤ 2x nằm ở phía dưới hoặc trên đường thẳng y = 2x.'},
+ {q:'Điểm nào thuộc miền nghiệm của bất phương trình −3x + 2y > 6?',o:['(0; 0)','(1; 1)','(−1; 0)','(0; 4)'],a:3,s:'Với (0; 4): −3 · 0 + 2 · 4 = 8 > 6 đúng. Các điểm còn lại cho giá trị 0, −1 và 3.'},
+ {q:'Miền nghiệm của một bất phương trình bậc nhất hai ẩn (không kể trường hợp suy biến) là:',o:['Một đường thẳng','Một điểm','Một nửa mặt phẳng','Một đoạn thẳng'],a:2,s:'Đường thẳng biên chia mặt phẳng thành hai nửa mặt phẳng, một trong hai nửa là miền nghiệm.'},
+ {q:'Điểm nào sau đây KHÔNG thuộc miền nghiệm của bất phương trình x + y ≤ 1?',o:['(0; 0)','(1; 0)','(0; 1)','(1; 1)'],a:3,s:'Với (1; 1): 1 + 1 = 2 > 1 nên không thuộc miền nghiệm.'},
+]},
+'he-bpt':{title:'Toán 10 · Hệ bất phương trình bậc nhất hai ẩn',qs:[
+ {q:'Điểm (1; 1) là nghiệm của hệ bất phương trình nào?',o:['{x ≥ 0; y ≥ 0; x + y ≤ 2}','{x ≥ 2; y ≥ 0}','{x + y ≥ 3; y ≥ 0}','{x ≤ 0; y ≤ 2}'],a:0,s:'Điểm (1; 1) thỏa mãn cả ba điều kiện: 1 ≥ 0, 1 ≥ 0 và 1 + 1 = 2 ≤ 2. Các hệ còn lại đều có một điều kiện bị vi phạm.'},
+ {q:'Miền nghiệm của hệ {x ≥ 0; y ≥ 0} là:',o:['Góc phần tư thứ hai','Góc phần tư thứ nhất, kể cả hai trục tọa độ','Góc phần tư thứ ba','Nửa mặt phẳng phía trên trục hoành'],a:1,s:'x ≥ 0 và y ≥ 0 xác định góc phần tư thứ nhất kể cả biên.'},
+ {q:'Hệ bất phương trình {x + y ≤ 2; x + y ≥ 3} có miền nghiệm là:',o:['Một dải giữa hai đường thẳng','Một tam giác','Tập hợp rỗng','Một nửa mặt phẳng'],a:2,s:'Không số nào vừa không lớn hơn 2 vừa không nhỏ hơn 3, nên hệ vô nghiệm, miền nghiệm rỗng.'},
+ {q:'Điểm nào thuộc miền nghiệm của hệ {x − y ≤ 0; x + y ≤ 2}?',o:['(2; 0)','(0; 2)','(1; 0)','(0; 3)'],a:1,s:'Với (0; 2): 0 − 2 = −2 ≤ 0 và 0 + 2 = 2 ≤ 2, thỏa mãn cả hai. Các điểm còn lại đều vi phạm một điều kiện.'},
+ {q:'Miền nghiệm của hệ {0 ≤ x ≤ 2; 0 ≤ y ≤ 1} là:',o:['Một hình vuông','Một hình chữ nhật','Một tam giác','Một hình thang'],a:1,s:'Các điều kiện giới hạn x trong [0; 2] và y trong [0; 1] tạo thành hình chữ nhật có các cạnh song song với hai trục.'},
+ {q:'Hệ bất phương trình biểu diễn điều kiện: x, y không âm và tổng của chúng không vượt quá 10 là:',o:['{x ≥ 0; y ≥ 0; x + y ≤ 10}','{x > 0; y > 0; x + y ≥ 10}','{x ≥ 0; y ≥ 0; x − y ≤ 10}','{x ≤ 0; y ≤ 0; x + y ≤ 10}'],a:0,s:'Không âm nghĩa là ≥ 0, không vượt quá 10 nghĩa là ≤ 10.'},
+ {q:'Điểm (3; 1) có thuộc miền nghiệm của hệ {2x + y ≤ 8; x − y ≥ 0} không?',o:['Không, vì vi phạm cả hai điều kiện','Không, vì vi phạm điều kiện thứ nhất','Có, thỏa mãn cả hai điều kiện','Không, vì vi phạm điều kiện thứ hai'],a:2,s:'2 · 3 + 1 = 7 ≤ 8 đúng và 3 − 1 = 2 ≥ 0 đúng, nên (3; 1) thuộc miền nghiệm.'},
+ {q:'Miền nghiệm của hệ {x ≥ 0; y ≥ 0; x + y ≤ 1} là:',o:['Một tứ giác','Một miền không bị chặn','Một tam giác','Một ngũ giác'],a:2,s:'Miền nghiệm là tam giác có ba đỉnh (0; 0), (1; 0) và (0; 1).'},
+ {q:'Giá trị lớn nhất của biểu thức F = x + y trên miền nghiệm của hệ {x ≥ 0; y ≥ 0; x + y ≤ 4} bằng:',o:['2','4','8','Không có giá trị lớn nhất'],a:1,s:'Trên miền đã cho, x + y ≤ 4 và giá trị 4 đạt được, chẳng hạn tại (4; 0). Vậy giá trị lớn nhất là 4.'},
+ {q:'Hệ bất phương trình nào sau đây vô nghiệm?',o:['{x ≥ 0; y ≥ 0}','{x + y ≤ 1; x + y ≥ 2}','{x ≤ 1; y ≤ 1}','{x − y ≤ 0; x + y ≥ 0}'],a:1,s:'x + y không thể vừa ≤ 1 vừa ≥ 2 nên hệ thứ hai vô nghiệm.'},
+]},
+'he-thuc-luong':{title:'Toán 10 · Hệ thức lượng trong tam giác',qs:[
+ {q:'Định lí côsin trong tam giác ABC phát biểu:',o:['a² = b² + c² + 2bc · cos A','a² = b² + c² − 2bc · cos A','a² = b² + c² − 2bc · sin A','a = b + c − 2bc · cos A'],a:1,s:'Theo định lí côsin: a² = b² + c² − 2bc · cos A.'},
+ {q:'Tam giác ABC có b = 3, c = 4 và góc A = 90°. Độ dài cạnh a bằng:',o:['5','6','7','√7'],a:0,s:'a² = 3² + 4² = 25 nên a = 5 (định lí Pythagore).'},
+ {q:'Định lí sin trong tam giác ABC (R là bán kính đường tròn ngoại tiếp) phát biểu:',o:['a / sin A = R','a · sin A = 2R','a / sin A = 2R','sin A / a = 2R'],a:2,s:'Theo định lí sin: a / sin A = b / sin B = c / sin C = 2R.'},
+ {q:'Tam giác ABC có R = 1 và góc A = 30°. Độ dài cạnh a bằng:',o:['2','1/2','√3','1'],a:3,s:'a = 2R · sin A = 2 · 1 · sin 30° = 2 · 1/2 = 1.'},
+ {q:'Công thức tính diện tích tam giác theo hai cạnh và góc xen giữa là:',o:['S = b · c · sin A','S = (1/2) · b · c · cos A','S = (1/2) · b · c · sin A','S = (1/2) · b · c · tan A'],a:2,s:'S = (1/2) · b · c · sin A, trong đó A là góc xen giữa hai cạnh b và c.'},
+ {q:'Tam giác có ba cạnh 5; 6; 7. Diện tích của tam giác bằng:',o:['6√6','12','√30','18'],a:0,s:'Nửa chu vi p = 9. Theo công thức Heron: S = √(9 · 4 · 3 · 2) = √216 = 6√6.'},
+ {q:'Tam giác ABC có b = 5, c = 8 và góc A = 60°. Độ dài cạnh a bằng:',o:['9','8','7','√129'],a:2,s:'a² = 5² + 8² − 2 · 5 · 8 · cos 60° = 25 + 64 − 40 = 49 nên a = 7.'},
+ {q:'Tam giác có cạnh a = 4 và đường cao tương ứng h = 3. Diện tích bằng:',o:['12','6','7','24'],a:1,s:'S = (1/2) · a · h = (1/2) · 4 · 3 = 6.'},
+ {q:'Công thức đường trung tuyến ứng với cạnh a (m là độ dài trung tuyến) là:',o:['m² = (2b² + 2c² − a²) / 4','m² = (b² + c² − a²) / 2','m² = b² + c² − a²','m² = (2a² + 2b² − c²) / 4'],a:0,s:'Công thức trung tuyến: m² = (2b² + 2c² − a²) / 4.'},
+ {q:'Tam giác đều cạnh a có diện tích bằng:',o:['a² / 2','a²√3 / 2','a²√3 / 4','a²'],a:2,s:'Tam giác đều cạnh a có chiều cao a√3 / 2 nên S = (1/2) · a · a√3 / 2 = a²√3 / 4.'},
+]},
+'vecto-khai-niem':{title:'Toán 10 · Vectơ: các khái niệm mở đầu',qs:[
+ {q:'Vectơ là gì?',o:['Một đoạn thẳng bất kỳ','Một đoạn thẳng có hướng, được xác định bởi điểm đầu và điểm cuối','Một đường thẳng','Một tia'],a:1,s:'Vectơ là đoạn thẳng có hướng: phân biệt điểm đầu và điểm cuối.'},
+ {q:'Hai vectơ được gọi là bằng nhau khi chúng:',o:['Có cùng điểm đầu','Nằm trên cùng một đường thẳng','Cùng hướng và có cùng độ dài','Có cùng điểm cuối'],a:2,s:'Hai vectơ bằng nhau khi cùng hướng và cùng độ dài.'},
+ {q:'Cho ba điểm phân biệt A, B, C. Số vectơ khác vectơ-không có điểm đầu và điểm cuối là các điểm này bằng:',o:['3','6','9','2'],a:1,s:'Mỗi điểm đầu có 2 lựa chọn điểm cuối, tổng cộng 3 · 2 = 6 vectơ.'},
+ {q:'Vectơ-không là vectơ có:',o:['Độ dài bằng 1','Điểm đầu và điểm cuối trùng nhau','Hướng bất kỳ cố định','Độ dài lớn nhất'],a:1,s:'Vectơ-không có điểm đầu trùng điểm cuối, độ dài bằng 0 và hướng tùy ý.'},
+ {q:'Cho hình bình hành ABCD. Vectơ nào bằng vectơ AB?',o:['BA','CD','DC','AC'],a:2,s:'Trong hình bình hành, DC cùng hướng và cùng độ dài với AB nên hai vectơ bằng nhau.'},
+ {q:'Hai vectơ được gọi là cùng phương khi giá của chúng:',o:['Vuông góc nhau','Song song hoặc trùng nhau','Cắt nhau','Không có điểm chung'],a:1,s:'Hai vectơ cùng phương khi giá của chúng song song hoặc trùng nhau.'},
+ {q:'Cho đoạn thẳng AB = 5 cm. Độ dài của vectơ AB bằng:',o:['25 cm','√5 cm','0','5 cm'],a:3,s:'Độ dài vectơ AB chính là độ dài đoạn thẳng AB, bằng 5 cm.'},
+ {q:'Vectơ đối của vectơ AB là vectơ:',o:['AB','BA','−BA','Vectơ-không'],a:1,s:'Vectơ đối của AB là vectơ ngược hướng, cùng độ dài, chính là BA.'},
+ {q:'Điều kiện để ba điểm A, B, C thẳng hàng là:',o:['Vectơ AB và vectơ AC cùng phương','Vectơ AB và vectơ AC vuông góc','AB = AC','A là trung điểm của BC'],a:0,s:'Ba điểm thẳng hàng khi và chỉ khi hai vectơ AB và AC cùng phương.'},
+ {q:'Cho hình vuông ABCD. Vectơ nào cùng hướng với vectơ AB?',o:['AD','BC','DC','CB'],a:2,s:'DC cùng chiều từ trái sang phải như AB. AD hướng lên, BC hướng lên, CB ngược hướng.'},
+]},
+'tong-hieu-vecto':{title:'Toán 10 · Tổng và hiệu của hai vectơ · Tích của một vectơ với một số',qs:[
+ {q:'Theo quy tắc ba điểm, vectơ AB + vectơ BC bằng:',o:['Vectơ BA','Vectơ AC','Vectơ CA','Vectơ-không'],a:1,s:'Quy tắc ba điểm: AB + BC = AC.'},
+ {q:'Vectơ AB − vectơ AC bằng:',o:['Vectơ BC','Vectơ CB','Vectơ CA','Vectơ-không'],a:1,s:'AB − AC = AB + CA = CB. Đây là hệ quả quen thuộc của quy tắc ba điểm.'},
+ {q:'Cho hình bình hành ABCD. Vectơ AB + vectơ AD bằng:',o:['Vectơ BD','Vectơ CA','Vectơ AC','Vectơ-không'],a:2,s:'Theo quy tắc hình bình hành: AB + AD = AC.'},
+ {q:'Gọi I là trung điểm của đoạn thẳng AB. Tổng vectơ IA + vectơ IB bằng:',o:['Vectơ AB','Vectơ-không','Vectơ BA','2 · vectơ IA'],a:1,s:'IA và IB là hai vectơ đối nhau nên tổng của chúng là vectơ-không.'},
+ {q:'Gọi G là trọng tâm tam giác ABC. Tổng vectơ GA + vectơ GB + vectơ GC bằng:',o:['Vectơ-không','Vectơ AG','3 · vectơ GA','Vectơ BC'],a:0,s:'Tính chất trọng tâm: GA + GB + GC = vectơ-không.'},
+ {q:'Gọi M là trung điểm của cạnh BC trong tam giác ABC. Đẳng thức nào đúng?',o:['AB + AC = AM','AB + AC = 2 · AM (dưới dạng vectơ)','AB − AC = 2 · AM','AB + BC = 2 · AM'],a:1,s:'Theo quy tắc trung điểm, với M là trung điểm BC thì vectơ AB + vectơ AC = 2 · vectơ AM.'},
+ {q:'Cho vectơ a khác vectơ-không. Vectơ 3a có tính chất:',o:['Ngược hướng với a và dài gấp 3','Cùng hướng với a và dài gấp 3','Cùng hướng với a và dài bằng a','Vuông góc với a'],a:1,s:'Nhân vectơ với số dương 3 cho vectơ cùng hướng và độ dài gấp 3 lần.'},
+ {q:'Điều kiện để hai vectơ a và b (b khác vectơ-không) cùng phương là:',o:['Tồn tại số k sao cho a = k · b','a + b = vectơ-không','a · b = 0','|a| = |b|'],a:0,s:'Hai vectơ cùng phương khi và chỉ khi vectơ này bằng vectơ kia nhân với một số thực.'},
+ {q:'Điểm M thỏa mãn vectơ MA + vectơ MB = vectơ-không. Vị trí của M là:',o:['Trùng với A','Trùng với B','Trung điểm của đoạn AB','Nằm ngoài đoạn AB'],a:2,s:'MA = −MB nên M nằm giữa A, B và cách đều hai điểm, tức M là trung điểm của AB.'},
+ {q:'Tổng vectơ AB + vectơ BA bằng:',o:['2 · vectơ AB','Vectơ-không','Vectơ AA có độ dài gấp đôi','Vectơ có độ dài 2 · AB nhưng vô hướng'],a:1,s:'BA là vectơ đối của AB nên tổng của chúng là vectơ-không.'},
+]},
+'tich-vo-huong':{title:'Toán 10 · Tích vô hướng của hai vectơ',qs:[
+ {q:'Tích vô hướng của hai vectơ a và b được tính bởi công thức:',o:['|a| · |b| · sin(a, b)','|a| · |b| · cos(a, b)','|a| + |b|','|a| · |b| / cos(a, b)'],a:1,s:'a · b = |a| · |b| · cos(a, b), trong đó (a, b) là góc giữa hai vectơ.'},
+ {q:'Cho |a| = 2, |b| = 3 và góc giữa hai vectơ bằng 60°. Tích vô hướng a · b bằng:',o:['6','3√3','3','1'],a:2,s:'a · b = 2 · 3 · cos 60° = 6 · 1/2 = 3.'},
+ {q:'Hai vectơ a, b khác vectơ-không vuông góc với nhau khi và chỉ khi:',o:['a · b = 1','a · b = 0','a · b = |a| · |b|','a + b = vectơ-không'],a:1,s:'cos 90° = 0 nên hai vectơ vuông góc khi và chỉ khi tích vô hướng bằng 0.'},
+ {q:'Trong mặt phẳng tọa độ, cho a = (1; 2) và b = (3; −1). Tích vô hướng a · b bằng:',o:['5','1','−1','7'],a:1,s:'a · b = 1 · 3 + 2 · (−1) = 3 − 2 = 1.'},
+ {q:'Độ dài của vectơ a = (3; 4) bằng:',o:['7','5','25','√7'],a:1,s:'|a| = √(3² + 4²) = √25 = 5.'},
+ {q:'Góc giữa hai vectơ a = (1; 0) và b = (0; 1) bằng:',o:['0°','45°','180°','90°'],a:3,s:'a · b = 0 nên hai vectơ vuông góc, góc giữa chúng là 90°.'},
+ {q:'Cho a = (2; −1) và b = (1; 2). Khẳng định nào đúng?',o:['a và b cùng phương','a và b vuông góc','a và b cùng hướng','a và b ngược hướng'],a:1,s:'a · b = 2 · 1 + (−1) · 2 = 0 nên hai vectơ vuông góc.'},
+ {q:'Cho vectơ a có |a| = 4. Giá trị của a · a bằng:',o:['4','8','16','2'],a:2,s:'a · a = |a|² = 4² = 16.'},
+ {q:'Góc giữa hai vectơ a = (1; 1) và b = (1; 0) bằng:',o:['30°','45°','60°','90°'],a:1,s:'cos(a, b) = (1 · 1 + 1 · 0) / (√2 · 1) = 1/√2 nên góc bằng 45°.'},
+ {q:'Cho tam giác ABC có |AB| = |AC| = 2 và góc A = 60°. Tích vô hướng của vectơ AB và vectơ AC bằng:',o:['4','2','0','2√3'],a:1,s:'AB · AC = 2 · 2 · cos 60° = 4 · 1/2 = 2.'},
+]},
+'so-gan-dung':{title:'Toán 10 · Số gần đúng và sai số',qs:[
+ {q:'Làm tròn số π = 3,14159... đến ba chữ số thập phân được kết quả:',o:['3,141','3,140','3,142','3,150'],a:2,s:'Chữ số thập phân thứ tư là 5 nên làm tròn lên: 3,142.'},
+ {q:'Làm tròn số 17,865 đến hàng phần mười được kết quả:',o:['17,8','17,9','17,86','18'],a:1,s:'Chữ số hàng phần trăm là 6 ≥ 5 nên 17,865 làm tròn thành 17,9.'},
+ {q:'Giá trị đúng của một đại lượng là 2,47 và số gần đúng là 2,5. Sai số tuyệt đối bằng:',o:['0,03','0,3','0,97','4,97'],a:0,s:'Sai số tuyệt đối là |2,5 − 2,47| = 0,03.'},
+ {q:'Làm tròn số 123 456 đến hàng nghìn được kết quả:',o:['123 000','124 000','120 000','123 500'],a:0,s:'Chữ số hàng trăm là 4 < 5 nên giữ nguyên phần nghìn: 123 000.'},
+ {q:'Số gần đúng a = 3,14 có độ chính xác d = 0,01. Giá trị đúng nằm trong khoảng:',o:['[3,10; 3,20]','[3,13; 3,15]','[3,14; 3,15]','[3,00; 3,14]'],a:1,s:'Giá trị đúng thuộc [a − d; a + d] = [3,13; 3,15].'},
+ {q:'Sai số tương đối của số gần đúng được tính bằng công thức:',o:['Δ nhân với giá trị đúng','Δ chia cho trị tuyệt đối của số gần đúng','Giá trị đúng chia cho Δ','Δ trừ giá trị đúng'],a:1,s:'Sai số tương đối δ = Δ / |a|, thường biểu diễn dưới dạng phần trăm.'},
+ {q:'Làm tròn số 2,5 đến hàng đơn vị theo quy ước làm tròn nửa lên được kết quả:',o:['2','3','2,5','4'],a:1,s:'Phần thập phân đúng bằng 0,5 thì làm tròn lên: 2,5 thành 3.'},
+ {q:'Số gần đúng 7,3 có độ chính xác 0,02. Điều này có nghĩa là:',o:['Giá trị đúng đúng bằng 7,3','|giá trị đúng − 7,3| ≤ 0,02','Giá trị đúng lớn hơn 7,3 là 0,02','Sai số tương đối bằng 0,02'],a:1,s:'Độ chính xác d cho biết giá trị đúng lệch khỏi số gần đúng không quá d.'},
+ {q:'Làm tròn số 98,76 đến hàng phần mười được kết quả:',o:['98,7','98,8','98,76','99'],a:1,s:'Chữ số hàng phần trăm là 6 ≥ 5 nên làm tròn lên: 98,8.'},
+ {q:'Một vật có chiều dài gần đúng 12,35 cm với độ chính xác 0,05 cm. Chiều dài đúng thuộc khoảng:',o:['[12,35; 12,40]','[12,00; 12,35]','[12,30; 12,40]','[12,34; 12,36]'],a:2,s:'Chiều dài đúng thuộc [12,35 − 0,05; 12,35 + 0,05] = [12,30; 12,40].'},
+]},
+'xu-the-trung-tam':{title:'Toán 10 · Các số đặc trưng đo xu thế trung tâm',qs:[
+ {q:'Cho dãy số liệu điểm kiểm tra: 5; 7; 8; 7; 9; 7; 6; 8; 7; 10. Số trung bình bằng:',o:['7,0','7,4','7,5','8,0'],a:1,s:'Tổng điểm là 74, số trung bình là 74 / 10 = 7,4.'},
+ {q:'Với dãy số liệu ở câu 1, mốt của mẫu số liệu bằng:',o:['8','9','7','10'],a:2,s:'Giá trị 7 xuất hiện 4 lần, nhiều nhất, nên mốt là 7.'},
+ {q:'Với dãy số liệu ở câu 1, trung vị bằng:',o:['7','7,5','8','6'],a:0,s:'Sắp xếp dãy: 5; 6; 7; 7; 7; 7; 8; 8; 9; 10. Trung vị là trung bình của hai giá trị ở giữa (thứ 5 và thứ 6), cả hai đều là 7 nên trung vị bằng 7.'},
+ {q:'Số trung bình của dãy 2; 4; 6; 8; 10 bằng:',o:['5','7','6','8'],a:2,s:'(2 + 4 + 6 + 8 + 10) / 5 = 30 / 5 = 6.'},
+ {q:'Mốt của dãy 3; 3; 5; 7; 7; 7; 9 bằng:',o:['3','5','9','7'],a:3,s:'Giá trị 7 xuất hiện 3 lần, nhiều nhất.'},
+ {q:'Dãy số liệu 1; 2; 3; 4; 100 có một giá trị bất thường rất lớn. Số đặc trưng nào đại diện tốt hơn cho xu thế trung tâm?',o:['Số trung bình','Trung vị','Giá trị lớn nhất','Khoảng biến thiên'],a:1,s:'Trung vị không bị ảnh hưởng mạnh bởi giá trị bất thường, còn số trung bình bị kéo lên 22, không đại diện cho phần lớn số liệu.'},
+ {q:'Tứ phân vị thứ nhất Q1 của dãy 1; 2; 3; 4; 5; 6; 7; 8 bằng:',o:['2','2,5','3','4,5'],a:1,s:'Nửa dưới của dãy là 1; 2; 3; 4, trung vị của nửa này là (2 + 3) / 2 = 2,5.'},
+ {q:'Số trung bình của dãy 4; 6; 9; 13 bằng:',o:['7','9','8','10'],a:2,s:'(4 + 6 + 9 + 13) / 4 = 32 / 4 = 8.'},
+ {q:'Cho bảng tần số: giá trị 2 có tần số 3, giá trị 5 có tần số 2. Số trung bình bằng:',o:['3,0','3,5','3,2','4,0'],a:2,s:'Số trung bình = (2 · 3 + 5 · 2) / 5 = 16 / 5 = 3,2.'},
+ {q:'Một dãy số liệu có số trung bình bằng 6. Thêm vào dãy một số liệu mới cũng bằng 6. Số trung bình của dãy mới:',o:['Tăng lên','Giảm xuống','Không đổi, vẫn bằng 6','Không xác định được'],a:2,s:'Thêm giá trị đúng bằng số trung bình hiện tại thì số trung bình không thay đổi.'},
+]},
+'do-phan-tan':{title:'Toán 10 · Các số đặc trưng đo độ phân tán',qs:[
+ {q:'Khoảng biến thiên của mẫu số liệu 3; 7; 2; 9; 5 bằng:',o:['5','6','7','9'],a:2,s:'Khoảng biến thiên = giá trị lớn nhất − giá trị nhỏ nhất = 9 − 2 = 7.'},
+ {q:'Phương sai của mẫu số liệu 2; 4; 6 bằng:',o:['8/3 ≈ 2,67','4','2','16/3 ≈ 5,33'],a:0,s:'Số trung bình là 4. Phương sai = [(2−4)² + (4−4)² + (6−4)²] / 3 = 8/3 ≈ 2,67.'},
+ {q:'Độ lệch chuẩn của mẫu số liệu là:',o:['Căn bậc hai của phương sai','Phương sai nhân đôi','Hiệu của giá trị lớn nhất và nhỏ nhất','Trung vị của mẫu'],a:0,s:'Độ lệch chuẩn s = √s², tức căn bậc hai của phương sai.'},
+ {q:'Độ lệch chuẩn của mẫu số liệu 5; 5; 5; 5 bằng:',o:['5','1','0','25'],a:2,s:'Mọi số liệu đều bằng nhau và bằng số trung bình nên độ phân tán bằng 0.'},
+ {q:'Cho Q1 = 3 và Q3 = 9. Khoảng tứ phân vị bằng:',o:['12','3','6','9'],a:2,s:'Khoảng tứ phân vị ΔQ = Q3 − Q1 = 9 − 3 = 6.'},
+ {q:'Hai lớp có điểm trung bình bằng nhau. Lớp nào có kết quả đồng đều hơn?',o:['Lớp có độ lệch chuẩn lớn hơn','Lớp có độ lệch chuẩn nhỏ hơn','Lớp có nhiều học sinh hơn','Không so sánh được'],a:1,s:'Độ lệch chuẩn càng nhỏ thì số liệu càng tập trung quanh số trung bình, tức kết quả càng đồng đều.'},
+ {q:'Phương sai của mẫu số liệu 0; 10 bằng:',o:['5','50','10','25'],a:3,s:'Số trung bình là 5. Phương sai = [(0−5)² + (10−5)²] / 2 = 50 / 2 = 25.'},
+ {q:'Đơn vị của độ lệch chuẩn là:',o:['Bình phương đơn vị của số liệu','Không có đơn vị','Cùng đơn vị với số liệu','Đơn vị phần trăm'],a:2,s:'Độ lệch chuẩn là căn bậc hai của phương sai nên có cùng đơn vị đo với số liệu.'},
+ {q:'Khoảng biến thiên của mẫu số liệu 12; 15; 11; 20; 14 bằng:',o:['8','9','11','20'],a:1,s:'20 − 11 = 9.'},
+ {q:'Nếu cộng thêm 2 vào mọi số liệu của một mẫu thì phương sai của mẫu mới:',o:['Tăng thêm 2','Tăng thêm 4','Không đổi','Giảm đi 2'],a:2,s:'Dịch chuyển toàn bộ số liệu cùng một lượng không làm thay đổi độ phân tán, nên phương sai không đổi.'},
+]},
+'goc-luong-giac':{title:'Toán 11 · Góc lượng giác và giá trị lượng giác',qs:[
+ {q:'Số đo 180° đổi sang rađian bằng:',o:['π/2','2π','π','π/4'],a:2,s:'180° tương ứng với π rađian.'},
+ {q:'Số đo π/3 rađian đổi sang độ bằng:',o:['30°','45°','60°','90°'],a:2,s:'π/3 rad = 180°/3 = 60°.'},
+ {q:'Giá trị của cos π bằng:',o:['0','1','−1/2','−1'],a:3,s:'Điểm cuối của góc π là (−1; 0) nên cos π = −1.'},
+ {q:'Số đo 2π/3 rađian đổi sang độ bằng:',o:['100°','120°','135°','150°'],a:1,s:'2π/3 rad = 2 · 180°/3 = 120°.'},
+ {q:'Điểm cuối của góc lượng giác π/4 thuộc góc phần tư thứ mấy?',o:['Thứ I','Thứ II','Thứ III','Thứ IV'],a:0,s:'0 < π/4 < π/2 nên điểm cuối thuộc góc phần tư thứ I.'},
+ {q:'Giá trị của sin(7π/6) bằng:',o:['1/2','−1/2','√3/2','−√3/2'],a:1,s:'7π/6 = π + π/6 nên sin(7π/6) = −sin(π/6) = −1/2.'},
+ {q:'Giá trị của tan(2π/3) bằng:',o:['√3','−√3','1/√3','−1'],a:1,s:'tan(2π/3) = −tan(π/3) = −√3.'},
+ {q:'Cho sin α = 3/5 với π/2 < α < π. Giá trị của cos α bằng:',o:['4/5','−4/5','3/5','−3/5'],a:1,s:'cos²α = 1 − 9/25 = 16/25. Vì α thuộc góc phần tư thứ II nên cos α âm, cos α = −4/5.'},
+ {q:'Một cung tròn có bán kính R = 4 và số đo π/3 rađian. Độ dài của cung bằng:',o:['4π/3','3π/4','12π','π/12'],a:0,s:'Độ dài cung l = R · α = 4 · π/3 = 4π/3.'},
+ {q:'Một rađian xấp xỉ bằng bao nhiêu độ?',o:['45°','57,3°','90°','180°'],a:1,s:'1 rad = 180°/π ≈ 57,3°.'},
+]},
+'cong-thuc-lg':{title:'Toán 11 · Công thức lượng giác',qs:[
+ {q:'Công thức nào sau đây đúng?',o:['sin(a + b) = sin a · sin b + cos a · cos b','sin(a + b) = sin a · cos b + cos a · sin b','sin(a + b) = sin a + sin b','sin(a + b) = sin a · cos b − cos a · sin b'],a:1,s:'Công thức cộng: sin(a + b) = sin a cos b + cos a sin b.'},
+ {q:'Công thức nhân đôi của cos 2a theo cos a là:',o:['cos 2a = 2cos²a − 1','cos 2a = cos²a + 1','cos 2a = 2sin²a − 1','cos 2a = 2cos a'],a:0,s:'cos 2a = cos²a − sin²a = 2cos²a − 1 = 1 − 2sin²a. Phương án đầu tiên đúng.'},
+ {q:'Giá trị của sin 75° bằng:',o:['(√6 − √2)/4','(√6 + √2)/4','1/2','√3/2'],a:1,s:'sin 75° = sin(45° + 30°) = sin45°cos30° + cos45°sin30° = (√6 + √2)/4.'},
+ {q:'Biểu thức cos²a − sin²a bằng:',o:['sin 2a','1','cos 2a','tan 2a'],a:2,s:'Theo công thức nhân đôi: cos²a − sin²a = cos 2a.'},
+ {q:'Công thức tan 2a theo tan a là:',o:['2 tan a / (1 − tan²a)','2 tan a / (1 + tan²a)','tan a / 2','tan²a / (1 − tan a)'],a:0,s:'tan 2a = 2 tan a / (1 − tan²a), với điều kiện biểu thức có nghĩa.'},
+ {q:'Công thức biến đổi tổng thành tích nào đúng?',o:['sin a + sin b = 2 sin((a+b)/2) · sin((a−b)/2)','sin a + sin b = 2 cos((a+b)/2) · cos((a−b)/2)','sin a + sin b = 2 sin((a+b)/2) · cos((a−b)/2)','sin a + sin b = sin(a + b)'],a:2,s:'sin a + sin b = 2 sin((a + b)/2) cos((a − b)/2).'},
+ {q:'Cho góc nhọn a có sin a = 3/5. Giá trị của sin 2a bằng:',o:['12/25','6/5','24/25','9/25'],a:2,s:'cos a = 4/5 (vì a nhọn). sin 2a = 2 sin a cos a = 2 · (3/5) · (4/5) = 24/25.'},
+ {q:'Giá trị của cos 15° bằng:',o:['(√6 − √2)/4','1/2','(√6 + √2)/4','√3/2'],a:2,s:'cos 15° = cos(45° − 30°) = cos45°cos30° + sin45°sin30° = (√6 + √2)/4.'},
+ {q:'Với mọi góc a làm cho biểu thức có nghĩa, 1 + tan²a bằng:',o:['1 / sin²a','1 / cos²a','cos²a','1'],a:1,s:'1 + tan²a = 1 / cos²a.'},
+ {q:'Công thức hạ bậc nào đúng?',o:['cos²(a/2) = (1 + cos a) / 2','cos²(a/2) = (1 − cos a) / 2','sin²(a/2) = (1 + cos a) / 2','cos²(a/2) = 1 + cos a'],a:0,s:'cos²(a/2) = (1 + cos a)/2 và sin²(a/2) = (1 − cos a)/2.'},
+]},
+'ham-so-lg':{title:'Toán 11 · Hàm số lượng giác',qs:[
+ {q:'Tập giá trị của hàm số y = sin x là:',o:['ℝ','[0; 1]','[−1; 1]','(−1; 1)'],a:2,s:'Với mọi x, −1 ≤ sin x ≤ 1 nên tập giá trị là [−1; 1].'},
+ {q:'Chu kì của hàm số y = sin x là:',o:['π','2π','π/2','4π'],a:1,s:'Hàm số sin có chu kì 2π.'},
+ {q:'Trong các hàm số sau, hàm số nào là hàm số chẵn?',o:['y = sin x','y = tan x','y = cos x','y = cot x'],a:2,s:'cos(−x) = cos x nên y = cos x là hàm chẵn. Sin, tan, cot là các hàm lẻ.'},
+ {q:'Chu kì của hàm số y = tan x là:',o:['2π','π/2','π','4π'],a:2,s:'Hàm số tan có chu kì π.'},
+ {q:'Tập xác định của hàm số y = tan x là:',o:['ℝ','ℝ \\ {kπ}','ℝ \\ {π/2 + kπ, k ∈ ℤ}','[−1; 1]'],a:2,s:'tan x xác định khi cos x ≠ 0, tức x ≠ π/2 + kπ.'},
+ {q:'Giá trị lớn nhất của hàm số y = 2 sin x + 1 bằng:',o:['2','3','1','−1'],a:1,s:'sin x ≤ 1 nên y ≤ 2 · 1 + 1 = 3.'},
+ {q:'Chu kì của hàm số y = sin 2x là:',o:['2π','π/2','4π','π'],a:3,s:'Chu kì của sin(ax) là 2π/|a| = 2π/2 = π.'},
+ {q:'Đồ thị hàm số y = cos x đi qua điểm nào?',o:['(0; 0)','(0; 1)','(π/2; 1)','(π; 1)'],a:1,s:'cos 0 = 1 nên đồ thị đi qua điểm (0; 1).'},
+ {q:'Hàm số y = sin x đồng biến trên khoảng nào?',o:['(0; π)','(π/2; 3π/2)','(−π/2; π/2)','(π; 2π)'],a:2,s:'Trên khoảng (−π/2; π/2), sin tăng từ −1 đến 1 nên đồng biến.'},
+ {q:'Giá trị nhỏ nhất của hàm số y = cos²x bằng:',o:['−1','0','1/2','1'],a:1,s:'cos²x nhận các giá trị trong [0; 1] nên giá trị nhỏ nhất là 0.'},
+]},
+'day-so':{title:'Toán 11 · Dãy số',qs:[
+ {q:'Cho dãy số có số hạng tổng quát uₙ = 2n + 1. Số hạng u₅ bằng:',o:['9','10','11','13'],a:2,s:'u₅ = 2 · 5 + 1 = 11.'},
+ {q:'Dãy số 1; 4; 9; 16; 25; ... có số hạng tổng quát là:',o:['uₙ = 2n − 1','uₙ = n²','uₙ = n + 3','uₙ = 3n − 2'],a:1,s:'Các số hạng là bình phương của 1; 2; 3; 4; 5 nên uₙ = n².'},
+ {q:'Cho dãy số uₙ = (−1)ⁿ. Số hạng u₁₀ bằng:',o:['−1','0','1','10'],a:2,s:'(−1)¹⁰ = 1 vì số mũ chẵn.'},
+ {q:'Dãy số cho bởi u₁ = 2 và uₙ₊₁ = uₙ + 3. Số hạng u₃ bằng:',o:['5','8','11','6'],a:1,s:'u₂ = 2 + 3 = 5, u₃ = 5 + 3 = 8.'},
+ {q:'Dãy số uₙ = 1/n (n ≥ 1) là dãy:',o:['Tăng','Giảm','Không đổi','Không đơn điệu'],a:1,s:'1/n giảm dần khi n tăng: 1; 1/2; 1/3; ... nên là dãy giảm.'},
+ {q:'Cho dãy số uₙ = n² − 4n + 3. Số hạng u₁ bằng:',o:['0','1','3','−1'],a:0,s:'u₁ = 1 − 4 + 3 = 0.'},
+ {q:'Dãy Fibonacci bắt đầu 1; 1; 2; 3; ... Số hạng thứ năm bằng:',o:['4','5','6','8'],a:1,s:'Mỗi số hạng bằng tổng hai số hạng đứng trước: 1; 1; 2; 3; 5.'},
+ {q:'Cho dãy số uₙ = (n + 1)/(n + 2). Khẳng định nào đúng?',o:['Mọi số hạng đều lớn hơn 1','Mọi số hạng đều nhỏ hơn 1','Dãy có số hạng bằng 1','Dãy không bị chặn'],a:1,s:'(n + 1)/(n + 2) < 1 với mọi n ≥ 1 vì tử nhỏ hơn mẫu.'},
+ {q:'Dãy số 2; 6; 12; 20; 30; ... có số hạng tổng quát là:',o:['uₙ = n² + 1','uₙ = 2n²','uₙ = n(n + 1)','uₙ = n² + n + 2'],a:2,s:'2 = 1 · 2, 6 = 2 · 3, 12 = 3 · 4, 20 = 4 · 5 nên uₙ = n(n + 1).'},
+ {q:'Cho dãy số uₙ = 3ⁿ. Số hạng u₄ bằng:',o:['12','27','81','64'],a:2,s:'3⁴ = 81.'},
+]},
+'csn-11':{title:'Toán 11 · Cấp số nhân',qs:[
+ {q:'Cấp số nhân có u₁ = 2 và công bội q = 3. Số hạng u₄ bằng:',o:['24','54','18','162'],a:1,s:'u₄ = u₁ · q³ = 2 · 27 = 54.'},
+ {q:'Dãy số 5; 10; 20; 40; ... là cấp số nhân có công bội bằng:',o:['5','1/2','2','10'],a:2,s:'q = 10 / 5 = 2.'},
+ {q:'Số hạng tổng quát của cấp số nhân có số hạng đầu u₁ và công bội q là:',o:['uₙ = u₁ + (n − 1)q','uₙ = u₁ · qⁿ','uₙ = u₁ · qⁿ⁻¹','uₙ = u₁ⁿ · q'],a:2,s:'uₙ = u₁ · qⁿ⁻¹ với n ≥ 1.'},
+ {q:'Tổng bốn số hạng đầu của cấp số nhân có u₁ = 1, q = 2 bằng:',o:['8','15','16','31'],a:1,s:'1 + 2 + 4 + 8 = 15.'},
+ {q:'Xen vào giữa 2 và 32 một số dương x để ba số 2; x; 32 lập thành cấp số nhân. Giá trị của x là:',o:['8','16','12','6'],a:0,s:'Trong cấp số nhân, x² = 2 · 32 = 64, với x dương nên x = 8.'},
+ {q:'Cấp số nhân có u₂ = 6 và u₃ = 18. Công bội bằng:',o:['2','12','3','1/3'],a:2,s:'q = u₃ / u₂ = 18 / 6 = 3.'},
+ {q:'Tổng của cấp số nhân vô hạn 1 + 1/2 + 1/4 + 1/8 + ... bằng:',o:['1','3/2','Không tồn tại','2'],a:3,s:'Tổng = u₁ / (1 − q) = 1 / (1 − 1/2) = 2.'},
+ {q:'Cấp số nhân lùi vô hạn có u₁ = 4 và q = 1/2. Tổng của cấp số nhân bằng:',o:['6','8','4','16'],a:1,s:'Tổng = 4 / (1 − 1/2) = 8.'},
+ {q:'Cấp số nhân có u₁ = 3 và công bội q = −2. Số hạng u₃ bằng:',o:['−12','−6','12','24'],a:2,s:'u₃ = 3 · (−2)² = 3 · 4 = 12.'},
+ {q:'Ba số x; 12; y theo thứ tự lập thành cấp số nhân. Tích x · y bằng:',o:['24','144','12','Không xác định được từ dữ kiện'],a:1,s:'Trong cấp số nhân, bình phương số hạng giữa bằng tích hai số bên cạnh: 12² = x · y = 144.'},
+]},
+'mau-ghep-nhom':{title:'Toán 11 · Mẫu số liệu ghép nhóm',qs:[
+ {q:'Giá trị đại diện của nhóm [150; 155) bằng:',o:['150','155','152,5','305'],a:2,s:'Giá trị đại diện là trung bình cộng hai đầu mút: (150 + 155) / 2 = 152,5.'},
+ {q:'Tần suất của một nhóm được tính bằng:',o:['Tần số nhân với cỡ mẫu','Tần số chia cho cỡ mẫu','Cỡ mẫu chia cho tần số','Tần số trừ cỡ mẫu'],a:1,s:'Tần suất = tần số / cỡ mẫu, thường viết dưới dạng thập phân hoặc phần trăm.'},
+ {q:'Cho mẫu ghép nhóm: nhóm [0; 10) có tần số 4, nhóm [10; 20) có tần số 6. Số trung bình của mẫu bằng:',o:['10','11','12','10,5'],a:1,s:'Giá trị đại diện hai nhóm là 5 và 15. Số trung bình = (5 · 4 + 15 · 6) / 10 = 110 / 10 = 11.'},
+ {q:'Cho mẫu ghép nhóm có tần số các nhóm [0; 5), [5; 10), [10; 15) lần lượt là 3; 7; 10 (cỡ mẫu 20). Nhóm chứa trung vị là:',o:['[0; 5)','[5; 10)','[10; 15)','Không xác định được'],a:1,s:'Tần số tích lũy: 3 rồi 10. Vị trí trung vị n/2 = 10 thuộc về nhóm thứ hai [5; 10) vì tích lũy tới nhóm này vừa đạt 10.'},
+ {q:'Mốt của mẫu số liệu ghép nhóm thuộc về nhóm nào?',o:['Nhóm đầu tiên','Nhóm có tần số nhỏ nhất','Nhóm có tần số lớn nhất','Nhóm cuối cùng'],a:2,s:'Nhóm chứa mốt là nhóm có tần số lớn nhất.'},
+ {q:'Độ dài của nhóm [20; 30) bằng:',o:['20','30','25','10'],a:3,s:'Độ dài nhóm = 30 − 20 = 10.'},
+ {q:'Hai nhóm đầu của một mẫu ghép nhóm có tần số lần lượt là 3 và 5. Tần số tích lũy của nhóm thứ hai bằng:',o:['5','3','8','15'],a:2,s:'Tần số tích lũy = 3 + 5 = 8.'},
+ {q:'Giá trị đại diện của nhóm [35; 40) bằng:',o:['35','37,5','40','75'],a:1,s:'(35 + 40) / 2 = 37,5.'},
+ {q:'Khi tính số trung bình của mẫu số liệu ghép nhóm, ta thay mỗi số liệu trong một nhóm bởi:',o:['Đầu mút trái của nhóm','Đầu mút phải của nhóm','Giá trị đại diện của nhóm','Tần số của nhóm'],a:2,s:'Số liệu trong nhóm được thay bằng giá trị đại diện (trung điểm) của nhóm.'},
+ {q:'Một nhóm có tần suất 0,25 trong mẫu có cỡ mẫu 40. Tần số của nhóm bằng:',o:['4','10','25','16'],a:1,s:'Tần số = 0,25 · 40 = 10.'},
+]},
+'dt-mp':{title:'Toán 11 · Đường thẳng và mặt phẳng trong không gian',qs:[
+ {q:'Qua ba điểm không thẳng hàng, số mặt phẳng xác định được là:',o:['Không có','Một và chỉ một','Hai','Vô số'],a:1,s:'Ba điểm không thẳng hàng xác định duy nhất một mặt phẳng.'},
+ {q:'Hai đường thẳng phân biệt trong không gian có thể ở những vị trí tương đối nào?',o:['Chỉ cắt nhau hoặc song song','Chỉ chéo nhau','Cắt nhau, song song hoặc chéo nhau','Chỉ song song hoặc chéo nhau'],a:2,s:'Trong không gian, hai đường thẳng phân biệt có thể cắt nhau, song song hoặc chéo nhau.'},
+ {q:'Nếu một đường thẳng có hai điểm phân biệt thuộc một mặt phẳng thì:',o:['Đường thẳng cắt mặt phẳng','Đường thẳng nằm trong mặt phẳng đó','Đường thẳng song song với mặt phẳng','Chưa kết luận được'],a:1,s:'Đường thẳng có hai điểm thuộc mặt phẳng thì mọi điểm của nó đều thuộc mặt phẳng, tức nó nằm trong mặt phẳng.'},
+ {q:'Giao tuyến của hai mặt phẳng phân biệt (khi chúng cắt nhau) là:',o:['Một điểm','Một đoạn thẳng','Một đường thẳng','Một tia'],a:2,s:'Hai mặt phẳng phân biệt cắt nhau theo một đường thẳng duy nhất.'},
+ {q:'Cho tứ diện ABCD. Hai đường thẳng AB và CD ở vị trí nào?',o:['Cắt nhau','Song song','Chéo nhau','Trùng nhau'],a:2,s:'AB và CD là hai cạnh đối diện của tứ diện, chúng không đồng phẳng nên chéo nhau.'},
+ {q:'Qua một điểm nằm ngoài một đường thẳng, số đường thẳng song song với đường thẳng đã cho là:',o:['Không có','Một và chỉ một','Hai','Vô số'],a:1,s:'Theo tiên đề Euclid trong không gian, qua một điểm ngoài đường thẳng có duy nhất một đường thẳng song song với đường thẳng đó.'},
+ {q:'Một mặt phẳng được xác định bởi:',o:['Hai điểm phân biệt','Một điểm và một điểm nữa','Hai đường thẳng cắt nhau','Một đường thẳng duy nhất'],a:2,s:'Hai đường thẳng cắt nhau xác định duy nhất một mặt phẳng. Hai điểm hay một đường thẳng thì chưa đủ.'},
+ {q:'Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. Giao tuyến của hai mặt phẳng (SAB) và (SCD) là:',o:['Đường thẳng qua S và song song với AB','Đường thẳng AC','Đường thẳng qua S và A','Đường thẳng BD'],a:0,s:'Hai mặt phẳng chứa hai đường thẳng song song AB và CD (vì đáy là hình bình hành) nên giao tuyến qua S và song song với AB.'},
+ {q:'Một tứ diện có bao nhiêu mặt?',o:['3','4','5','6'],a:1,s:'Tứ diện có 4 mặt, đều là tam giác.'},
+ {q:'Hai mặt phẳng phân biệt trong không gian có thể:',o:['Chỉ song song','Chỉ cắt nhau','Song song hoặc cắt nhau theo một đường thẳng','Trùng nhau'],a:2,s:'Hai mặt phẳng phân biệt hoặc song song, hoặc cắt nhau theo một đường thẳng.'},
+]},
+'song-song':{title:'Toán 11 · Hai đường thẳng song song · Đường thẳng song song với mặt phẳng',qs:[
+ {q:'Điều kiện để đường thẳng a song song với mặt phẳng (P) là:',o:['a nằm trong (P)','a không nằm trong (P) và a song song với một đường thẳng nằm trong (P)','a cắt (P) tại một điểm','a vuông góc với (P)'],a:1,s:'a song song với (P) khi a không thuộc (P) và song song với một đường thẳng của (P).'},
+ {q:'Nếu đường thẳng a song song với mặt phẳng (P) và mặt phẳng (Q) chứa a cắt (P) theo giao tuyến b thì:',o:['a cắt b','a trùng b','a song song với b','a vuông góc với b'],a:2,s:'Giao tuyến b của hai mặt phẳng song song với đường thẳng a nằm trong một mặt, nên a song song với b.'},
+ {q:'Hai đường thẳng phân biệt cùng song song với một đường thẳng thứ ba thì:',o:['Chéo nhau','Song song với nhau','Cắt nhau','Vuông góc với nhau'],a:1,s:'Tính chất bắc cầu: hai đường thẳng phân biệt cùng song song với đường thẳng thứ ba thì song song với nhau.'},
+ {q:'Cho hình chóp S.ABCD có đáy ABCD là hình bình hành. Đường thẳng CD song song với mặt phẳng nào?',o:['(SAD)','(SBC)','(SAB)','(ABC)'],a:2,s:'CD song song với AB, AB nằm trong (SAB) và CD không nằm trong (SAB) nên CD song song với (SAB).'},
+ {q:'Cho tứ diện ABCD, M và N lần lượt là trung điểm của AB và AC. Đường thẳng MN song song với mặt phẳng nào?',o:['(ABD)','(ABC)','(ACD)','(BCD)'],a:3,s:'MN là đường trung bình của tam giác ABC nên MN song song BC, mà BC nằm trong (BCD), vậy MN song song với (BCD).'},
+ {q:'Nếu hai mặt phẳng song song với nhau thì mọi đường thẳng nằm trong mặt phẳng này:',o:['Cắt mặt phẳng kia','Song song với mặt phẳng kia','Nằm trong mặt phẳng kia','Vuông góc với mặt phẳng kia'],a:1,s:'Đường thẳng trong mặt phẳng này không có điểm chung với mặt phẳng kia nên song song với nó.'},
+ {q:'Một mặt phẳng cắt hai mặt phẳng song song (P) và (Q) theo hai giao tuyến a và b. Khẳng định nào đúng?',o:['a cắt b','a song song với b','a trùng b','a chéo b'],a:1,s:'Hai giao tuyến cùng nằm trong mặt phẳng cắt và không có điểm chung nên song song với nhau.'},
+ {q:'Cho a song song b, b nằm trong mặt phẳng (P) và a không nằm trong (P). Khi đó:',o:['a cắt (P)','a nằm trong (P)','a song song với (P)','a chéo (P)'],a:2,s:'a song song với đường thẳng b thuộc (P) và a không thuộc (P) nên a song song với (P).'},
+ {q:'Trong hình hộp, các cặp mặt đối diện có tính chất:',o:['Cắt nhau','Song song với nhau','Trùng nhau','Vuông góc với nhau'],a:1,s:'Các mặt đối diện của hình hộp song song với nhau.'},
+ {q:'Qua một điểm nằm ngoài mặt phẳng (P), số mặt phẳng song song với (P) là:',o:['Không có','Một và chỉ một','Hai','Vô số'],a:1,s:'Qua một điểm ngoài mặt phẳng có duy nhất một mặt phẳng song song với mặt phẳng đã cho.'},
+]},
+'gh-day-so':{title:'Toán 11 · Giới hạn của dãy số',qs:[
+ {q:'Giới hạn của dãy số uₙ = 1/n khi n → +∞ bằng:',o:['1','0','+∞','Không tồn tại'],a:1,s:'1/n tiến về 0 khi n tăng vô hạn.'},
+ {q:'Giới hạn của dãy số uₙ = (2n + 1)/n bằng:',o:['1','2','+∞','1/2'],a:1,s:'(2n + 1)/n = 2 + 1/n → 2.'},
+ {q:'Giới hạn của dãy số uₙ = (1/2)ⁿ bằng:',o:['1/2','1','0','+∞'],a:2,s:'Với |q| < 1, qⁿ → 0. Ở đây q = 1/2.'},
+ {q:'Giới hạn của dãy số uₙ = 3n²/(n² + 1) bằng:',o:['0','1','3','+∞'],a:2,s:'Chia tử và mẫu cho n²: 3 / (1 + 1/n²) → 3.'},
+ {q:'Giới hạn của dãy số uₙ = (n + 5)/(2n) bằng:',o:['1/2','1','2','5/2'],a:0,s:'(n + 5)/(2n) = 1/2 + 5/(2n) → 1/2.'},
+ {q:'Dãy số uₙ = (−1)ⁿ có giới hạn không?',o:['Có, bằng 0','Có, bằng 1','Có, bằng −1','Không có giới hạn vì dao động giữa −1 và 1'],a:3,s:'Các số hạng luân phiên −1 và 1, không tiến về một số nào nên dãy không có giới hạn.'},
+ {q:'Giới hạn của dãy số uₙ = 5 + 1/n² bằng:',o:['0','1','5','+∞'],a:2,s:'1/n² → 0 nên giới hạn là 5.'},
+ {q:'Giới hạn của dãy số uₙ = 4n³/(2n³ + n) bằng:',o:['4','2','0','+∞'],a:1,s:'Chia tử và mẫu cho n³: 4 / (2 + 1/n²) → 2.'},
+ {q:'Biết lim uₙ = 3 và lim vₙ = 2. Giới hạn của dãy (uₙ · vₙ) bằng:',o:['5','3/2','6','1'],a:2,s:'Giới hạn của tích bằng tích các giới hạn: 3 · 2 = 6.'},
+ {q:'Giới hạn của dãy số uₙ = √n / n bằng:',o:['1','+∞','0','1/2'],a:2,s:'√n / n = 1/√n → 0.'},
+]},
+'gh-ham-so':{title:'Toán 11 · Giới hạn của hàm số · Hàm số liên tục',qs:[
+ {q:'Giới hạn lim (x→2) của (x² − 4)/(x − 2) bằng:',o:['0','2','Không tồn tại','4'],a:3,s:'(x² − 4)/(x − 2) = x + 2 với x ≠ 2, nên giới hạn bằng 2 + 2 = 4.'},
+ {q:'Giới hạn lim (x→0) của sin x / x bằng:',o:['0','1','+∞','Không tồn tại'],a:1,s:'Đây là giới hạn cơ bản: lim (x→0) sin x / x = 1.'},
+ {q:'Giới hạn lim (x→1) của (2x + 3) bằng:',o:['3','2','5','Không tồn tại'],a:2,s:'Thay trực tiếp x = 1: 2 · 1 + 3 = 5.'},
+ {q:'Hàm số f(x) liên tục tại điểm x₀ khi và chỉ khi:',o:['f(x₀) xác định','lim (x→x₀) f(x) = f(x₀)','f(x₀) = 0','lim (x→x₀) f(x) tồn tại'],a:1,s:'Ba điều kiện liên tục gộp lại: giới hạn tại x₀ tồn tại, bằng giá trị f(x₀).'},
+ {q:'Hàm số y = 1/x gián đoạn tại điểm nào?',o:['x = 1','x = −1','x = 0','Liên tục trên toàn tập xác định và cả tại 0'],a:2,s:'Tại x = 0 hàm số không xác định nên gián đoạn.'},
+ {q:'Giới hạn lim (x→+∞) của 1/x bằng:',o:['+∞','0','1','Không tồn tại'],a:1,s:'Khi x → +∞, 1/x → 0.'},
+ {q:'Giới hạn lim (x→3) của (x − 3)/(x² − 9) bằng:',o:['1/6','1/3','0','Không tồn tại'],a:0,s:'(x − 3)/(x² − 9) = 1/(x + 3) với x ≠ 3, nên giới hạn bằng 1/6.'},
+ {q:'Hàm số nào sau đây liên tục trên toàn bộ ℝ?',o:['y = 1/x','y = tan x','y = x² + 1','y = √x'],a:2,s:'Hàm đa thức liên tục trên ℝ. Các hàm còn lại không xác định hoặc gián đoạn tại một số điểm.'},
+ {q:'Giới hạn lim (x→−∞) của x³ bằng:',o:['+∞','0','−∞','Không tồn tại'],a:2,s:'Khi x → −∞, x³ → −∞.'},
+ {q:'Cho f(x) = (x² − 1)/(x − 1) khi x ≠ 1 và f(1) = a. Để f liên tục tại x = 1 thì a bằng:',o:['1','0','2','Không có giá trị nào'],a:2,s:'Với x ≠ 1, f(x) = x + 1 nên giới hạn tại 1 bằng 2. Muốn liên tục thì a = 2.'},
+]},
+'gtln-gtnn':{title:'Toán 12 · Giá trị lớn nhất và giá trị nhỏ nhất của hàm số',qs:[
+ {q:'Giá trị lớn nhất của hàm số y = x² trên đoạn [−1; 2] bằng:',o:['1','2','4','0'],a:2,s:'x² đạt giá trị lớn nhất tại đầu mút x = 2: y = 4.'},
+ {q:'Giá trị nhỏ nhất của hàm số y = x³ − 3x trên đoạn [0; 2] bằng:',o:['0','−2','2','−1'],a:1,s:'y′ = 3x² − 3 = 0 tại x = 1 thuộc đoạn. y(1) = −2, y(0) = 0, y(2) = 2 nên giá trị nhỏ nhất là −2.'},
+ {q:'Giá trị lớn nhất của hàm số y = sin x + 2 bằng:',o:['2','1','3','Không có'],a:2,s:'sin x ≤ 1 nên y ≤ 3, đạt được khi sin x = 1.'},
+ {q:'Giá trị nhỏ nhất của hàm số y = x + 1/x trên khoảng (0; +∞) bằng:',o:['1','2','0','Không có'],a:1,s:'Theo bất đẳng thức AM–GM: x + 1/x ≥ 2√(x · 1/x) = 2, đạt tại x = 1.'},
+ {q:'Giá trị lớn nhất của hàm số y = −x² + 4x trên đoạn [0; 3] bằng:',o:['3','0','4','5'],a:2,s:'Đỉnh parabol tại x = 2 thuộc đoạn, y(2) = 4. Hai đầu mút cho y = 0 và y = 3.'},
+ {q:'Giá trị lớn nhất của hàm số y = (x + 1)/(x + 2) trên đoạn [0; 1] bằng:',o:['1/2','2/3','3/4','1'],a:1,s:'y′ = 1/(x + 2)² > 0 nên hàm đồng biến, giá trị lớn nhất tại x = 1: y = 2/3.'},
+ {q:'Giá trị nhỏ nhất của hàm số y = x² − 4x + 5 trên ℝ bằng:',o:['5','0','1','−1'],a:2,s:'y = (x − 2)² + 1 ≥ 1, đạt tại x = 2.'},
+ {q:'Giá trị lớn nhất của hàm số y = cos 2x − 1 bằng:',o:['1','0','−1','2'],a:1,s:'cos 2x ≤ 1 nên y ≤ 0, đạt khi cos 2x = 1.'},
+ {q:'Giá trị nhỏ nhất của hàm số y = x³ trên đoạn [−2; 1] bằng:',o:['−8','−2','0','1'],a:0,s:'Hàm đồng biến trên ℝ nên giá trị nhỏ nhất tại x = −2: y = −8.'},
+ {q:'Giá trị lớn nhất của hàm số y = √(4 − x²) bằng:',o:['4','2','0','Không có'],a:1,s:'Biểu thức dưới căn lớn nhất bằng 4 khi x = 0, nên giá trị lớn nhất của hàm là √4 = 2.'},
+]},
+'tiem-can':{title:'Toán 12 · Đường tiệm cận của đồ thị hàm số',qs:[
+ {q:'Đồ thị hàm số y = (2x + 1)/(x − 1) có tiệm cận đứng là:',o:['x = −1','x = 1','y = 1','x = 2'],a:1,s:'Mẫu số bằng 0 tại x = 1 và tử khác 0 tại đó nên x = 1 là tiệm cận đứng.'},
+ {q:'Đồ thị hàm số y = (2x + 1)/(x − 1) có tiệm cận ngang là:',o:['y = 1','y = −1','y = 2','x = 2'],a:2,s:'Khi x → ±∞, y → 2/1 = 2 nên y = 2 là tiệm cận ngang.'},
+ {q:'Đồ thị hàm số y = (x² + 1)/(x − 2) có tiệm cận xiên là:',o:['y = x − 2','y = x + 2','y = x','Không có tiệm cận xiên'],a:1,s:'Chia đa thức: (x² + 1)/(x − 2) = x + 2 + 5/(x − 2), nên tiệm cận xiên là y = x + 2.'},
+ {q:'Đồ thị hàm số y = 1/x² có tiệm cận đứng là:',o:['y = 0','x = 1','x = 0','Không có'],a:2,s:'Khi x → 0, y → +∞ nên x = 0 là tiệm cận đứng.'},
+ {q:'Đồ thị hàm số y = eˣ có tiệm cận ngang là:',o:['y = 0 về phía x → −∞','y = 1','x = 0','Không có tiệm cận nào'],a:0,s:'Khi x → −∞, eˣ → 0 nên đường thẳng y = 0 là tiệm cận ngang.'},
+ {q:'Đồ thị hàm số y = (x + 3)/(x² − 4) có tất cả bao nhiêu đường tiệm cận?',o:['1','2','3','4'],a:2,s:'Hai tiệm cận đứng x = 2 và x = −2, một tiệm cận ngang y = 0. Tổng cộng 3.'},
+ {q:'Đồ thị hàm số y = (3x − 1)/(x + 2) có tiệm cận ngang là:',o:['y = −1/2','y = 3','y = −2','x = 3'],a:1,s:'Tỉ số hệ số cao nhất: 3/1 = 3 nên tiệm cận ngang là y = 3.'},
+ {q:'Đồ thị hàm số y = ln x có tiệm cận đứng là:',o:['x = 1','y = 0','x = 0','Không có'],a:2,s:'Khi x → 0⁺, ln x → −∞ nên x = 0 là tiệm cận đứng.'},
+ {q:'Đồ thị hàm phân thức có tiệm cận đứng x = x₀ khi:',o:['x₀ là nghiệm của tử số','x₀ là nghiệm của mẫu số và không là nghiệm của tử số','x₀ là nghiệm của cả tử và mẫu','Mẫu số luôn khác 0'],a:1,s:'Tại nghiệm của mẫu mà tử khác 0, hàm tiến ra vô cực nên có tiệm cận đứng.'},
+ {q:'Đồ thị hàm số y = (2x² + 3)/(x² + 1) có tiệm cận ngang là:',o:['y = 3','y = 0','y = 2','Không có'],a:2,s:'Khi x → ±∞, y → 2/1 = 2.'},
+]},
+'do-thi-hs':{title:'Toán 12 · Đồ thị của hàm số',qs:[
+ {q:'Đồ thị hàm số y = x³ − 3x có bao nhiêu điểm cực trị?',o:['0','1','2','3'],a:2,s:'y′ = 3x² − 3 có hai nghiệm phân biệt ±1 và đổi dấu tại cả hai nên có 2 điểm cực trị.'},
+ {q:'Đồ thị hàm số y = x⁴ − 2x² cắt trục hoành tại bao nhiêu điểm phân biệt?',o:['1','2','3','4'],a:2,s:'x⁴ − 2x² = x²(x² − 2) = 0 cho x = 0, x = √2, x = −√2: ba điểm phân biệt.'},
+ {q:'Đồ thị hàm số y = (x + 1)/(x − 1) có tâm đối xứng là điểm:',o:['(1; 1)','(−1; 1)','(1; −1)','(0; −1)'],a:0,s:'Tâm đối xứng là giao điểm của tiệm cận đứng x = 1 và tiệm cận ngang y = 1, tức điểm (1; 1).'},
+ {q:'Hàm số y = x⁴ + x² + 1 có bao nhiêu điểm cực trị?',o:['0','1','2','3'],a:1,s:'y′ = 4x³ + 2x = 2x(2x² + 1) chỉ đổi dấu tại x = 0 nên có đúng 1 điểm cực trị.'},
+ {q:'Khẳng định nào đúng về đồ thị hàm số bậc ba?',o:['Luôn có hai điểm cực trị','Luôn có một điểm uốn và điểm uốn là tâm đối xứng của đồ thị','Không bao giờ cắt trục hoành','Luôn đồng biến trên ℝ'],a:1,s:'Mọi đồ thị hàm bậc ba đều có đúng một điểm uốn và nhận điểm uốn làm tâm đối xứng.'},
+ {q:'Đồ thị hàm số y = −x³ + 3x cắt trục tung tại điểm:',o:['(0; 3)','(0; 0)','(0; −3)','(3; 0)'],a:1,s:'Tại x = 0, y = 0 nên giao điểm với trục tung là (0; 0).'},
+ {q:'Hàm số nào có đồ thị nhận trục tung làm trục đối xứng?',o:['y = x³ + x','y = (x + 1)/(x − 1)','y = x² + cos x','y = sin x'],a:2,s:'Đồ thị nhận trục tung làm trục đối xứng khi hàm là hàm chẵn: x² + cos x là hàm chẵn.'},
+ {q:'Đồ thị hàm số y = (2x − 1)/(x + 1) có tâm đối xứng là điểm:',o:['(−1; 2)','(1; 2)','(−1; −2)','(2; −1)'],a:0,s:'Tiệm cận đứng x = −1, tiệm cận ngang y = 2, tâm đối xứng là (−1; 2).'},
+ {q:'Đồ thị hàm số y = x³ − 3x² + 2 cắt trục hoành tại bao nhiêu điểm phân biệt?',o:['1','2','3','0'],a:2,s:'x³ − 3x² + 2 = (x − 1)(x² − 2x − 2) có ba nghiệm phân biệt: 1 và 1 ± √3.'},
+ {q:'Đồ thị hàm số bậc ba y = ax³ + bx² + cx + d (a ≠ 0) có tối đa bao nhiêu điểm cực trị?',o:['1','2','3','Không giới hạn'],a:1,s:'Đạo hàm là tam thức bậc hai nên có tối đa hai nghiệm, tức tối đa 2 điểm cực trị.'},
+]},
+'vecto-kg':{title:'Toán 12 · Vectơ và hệ trục tọa độ trong không gian',qs:[
+ {q:'Cho a = (1; 2; 3) và b = (4; 5; 6). Vectơ a + b có tọa độ:',o:['(5; 7; 9)','(3; 3; 3)','(4; 10; 18)','(5; 6; 7)'],a:0,s:'Cộng theo từng thành phần: (1 + 4; 2 + 5; 3 + 6) = (5; 7; 9).'},
+ {q:'Độ dài của vectơ a = (2; −1; 2) bằng:',o:['5','3','√5','1'],a:1,s:'|a| = √(4 + 1 + 4) = √9 = 3.'},
+ {q:'Hình chiếu của điểm M(1; −2; 3) lên mặt phẳng (Oxy) có tọa độ:',o:['(1; −2; 0)','(0; −2; 3)','(1; 0; 3)','(0; 0; 3)'],a:0,s:'Hình chiếu lên (Oxy) giữ nguyên x, y và cho z = 0.'},
+ {q:'Trung điểm của đoạn thẳng nối A(0; 0; 0) và B(2; 4; 6) có tọa độ:',o:['(2; 4; 6)','(1; 2; 3)','(0; 2; 3)','(1; 4; 3)'],a:1,s:'Trung điểm có tọa độ là trung bình cộng từng thành phần: (1; 2; 3).'},
+ {q:'Cho a = (1; 0; 2) và b = (3; 1; −1). Tích vô hướng a · b bằng:',o:['5','3','1','−1'],a:2,s:'a · b = 1 · 3 + 0 · 1 + 2 · (−1) = 3 − 2 = 1.'},
+ {q:'Khoảng cách từ điểm A(1; 2; 3) đến gốc tọa độ O bằng:',o:['6','√14','√10','14'],a:1,s:'OA = √(1 + 4 + 9) = √14.'},
+ {q:'Góc giữa hai vectơ a = (1; 1; 0) và b = (0; 1; 1) bằng:',o:['30°','45°','60°','90°'],a:2,s:'cos góc = (0 + 1 + 0) / (√2 · √2) = 1/2 nên góc bằng 60°.'},
+ {q:'Điểm nằm trên trục Oz có tọa độ dạng:',o:['(x; 0; 0)','(0; y; 0)','(0; 0; z)','(x; y; 0)'],a:2,s:'Điểm trên trục Oz có hoành độ và tung độ bằng 0.'},
+ {q:'Cho a = (1; 2; 0) và b = (0; 1; 3). Vectơ 2a − b có tọa độ:',o:['(2; 3; −3)','(2; 5; 3)','(1; 1; −3)','(2; 3; 3)'],a:0,s:'2a = (2; 4; 0), trừ b được (2; 3; −3).'},
+ {q:'Cho A(1; 1; 1) và B(3; 1; 1). Độ dài đoạn AB bằng:',o:['4','2','√8','1'],a:1,s:'AB = √((3−1)² + 0 + 0) = 2.'},
+]},
+'tich-phan':{title:'Toán 12 · Tích phân và ứng dụng của tích phân',qs:[
+ {q:'Tích phân từ 0 đến 1 của 2x dx bằng:',o:['0','1','2','1/2'],a:1,s:'∫₀¹ 2x dx = [x²]₀¹ = 1.'},
+ {q:'Tích phân từ 0 đến π của sin x dx bằng:',o:['0','1','2','−2'],a:2,s:'∫₀^π sin x dx = [−cos x]₀^π = 1 + 1 = 2.'},
+ {q:'Tích phân từ 1 đến 2 của (1/x) dx bằng:',o:['ln 2','1','2','e'],a:0,s:'∫₁² (1/x) dx = ln 2 − ln 1 = ln 2.'},
+ {q:'Tích phân từ 0 đến 1 của eˣ dx bằng:',o:['1','e','e − 1','e + 1'],a:2,s:'∫₀¹ eˣ dx = e¹ − e⁰ = e − 1.'},
+ {q:'Diện tích hình phẳng giới hạn bởi đồ thị y = x², trục Ox và hai đường thẳng x = 0, x = 1 bằng:',o:['1','1/2','1/3','2/3'],a:2,s:'S = ∫₀¹ x² dx = [x³/3]₀¹ = 1/3.'},
+ {q:'Tích phân từ −1 đến 1 của x² dx bằng:',o:['0','1/3','2/3','2'],a:2,s:'∫₋₁¹ x² dx = [x³/3]₋₁¹ = 1/3 − (−1/3) = 2/3.'},
+ {q:'Tích phân từ 0 đến 1 của (3x² + 1) dx bằng:',o:['1','2','3','4'],a:1,s:'∫₀¹ (3x² + 1) dx = [x³ + x]₀¹ = 2.'},
+ {q:'Thể tích khối tròn xoay khi quay hình phẳng giới hạn bởi y = x, trục Ox, x = 0, x = 1 quanh trục Ox bằng:',o:['π/3','π','π/2','2π/3'],a:0,s:'V = π ∫₀¹ x² dx = π · 1/3 = π/3.'},
+ {q:'Tích phân từ 2 đến 3 của (x − 1) dx bằng:',o:['1','3/2','2','5/2'],a:1,s:'[x²/2 − x]₂³ = (9/2 − 3) − (2 − 2) = 3/2.'},
+ {q:'Biết tích phân từ 0 đến 2 của f(x) dx bằng 5. Tích phân từ 0 đến 2 của (f(x) + 1) dx bằng:',o:['5','6','7','10'],a:2,s:'∫₀² (f(x) + 1) dx = 5 + ∫₀² 1 dx = 5 + 2 = 7.'},
+]},
+'pt-mat-phang':{title:'Toán 12 · Phương trình mặt phẳng',qs:[
+ {q:'Mặt phẳng đi qua điểm M(1; 2; 3) và có vectơ pháp tuyến n = (1; 0; −1) có phương trình:',o:['x − z + 2 = 0','x + z − 2 = 0','x − z − 2 = 0','x + 2y + 3z = 0'],a:0,s:'Phương trình: 1(x − 1) + 0(y − 2) − 1(z − 3) = 0, rút gọn thành x − z + 2 = 0.'},
+ {q:'Mặt phẳng (Oxy) có phương trình:',o:['x = 0','y = 0','z = 0','x + y = 0'],a:2,s:'Mọi điểm của mặt phẳng (Oxy) có cao độ z = 0.'},
+ {q:'Vectơ pháp tuyến của mặt phẳng 2x − 3y + z − 5 = 0 là:',o:['(2; 3; 1)','(2; −3; 1)','(−2; −3; −1)','(2; −3; −5)'],a:1,s:'Vectơ pháp tuyến gồm các hệ số của x, y, z: (2; −3; 1).'},
+ {q:'Điểm nào thuộc mặt phẳng x + y + z − 3 = 0?',o:['(0; 0; 0)','(1; 1; 1)','(3; 3; 3)','(1; 2; 3)'],a:1,s:'1 + 1 + 1 − 3 = 0 nên điểm (1; 1; 1) thuộc mặt phẳng.'},
+ {q:'Mặt phẳng đi qua gốc tọa độ và có vectơ pháp tuyến n = (0; 1; 0) là mặt phẳng:',o:['(Oxy)','(Oyz)','(Oxz), có phương trình y = 0','Có phương trình x = 0'],a:2,s:'Phương trình là 0(x) + 1(y) + 0(z) = 0, tức y = 0, chính là mặt phẳng (Oxz).'},
+ {q:'Khoảng cách từ gốc tọa độ O đến mặt phẳng 3x + 4y − 10 = 0 bằng:',o:['10','5','2','1'],a:2,s:'d = |−10| / √(3² + 4²) = 10 / 5 = 2.'},
+ {q:'Mặt phẳng x + 2y − z + 1 = 0 song song với mặt phẳng nào?',o:['x + 2y + z = 0','2x + 4y − 2z + 3 = 0','x − 2y − z = 0','2x + y − z = 0'],a:1,s:'Vectơ pháp tuyến (2; 4; −2) cùng phương với (1; 2; −1) và hai mặt phẳng không trùng nhau nên chúng song song.'},
+ {q:'Mặt phẳng trung trực của đoạn thẳng AB với A(0; 0; 0) và B(2; 0; 0) có phương trình:',o:['x = 2','y = 1','x = 1','z = 1'],a:2,s:'Trung điểm của AB là (1; 0; 0), mặt phẳng trung trực vuông góc với AB nên có phương trình x = 1.'},
+ {q:'Mặt phẳng đi qua ba điểm A(1; 0; 0), B(0; 1; 0), C(0; 0; 1) có phương trình:',o:['x + y + z = 0','x + y + z = 1','x + y + z = 3','xyz = 1'],a:1,s:'Đây là mặt phẳng đoạn chắn: x/1 + y/1 + z/1 = 1.'},
+ {q:'Góc giữa hai mặt phẳng có vectơ pháp tuyến n₁ = (1; 0; 0) và n₂ = (0; 1; 0) bằng:',o:['0°','45°','90°','180°'],a:2,s:'Hai vectơ pháp tuyến vuông góc nhau nên góc giữa hai mặt phẳng là 90°.'},
+]},
+'pt-duong-thang':{title:'Toán 12 · Phương trình đường thẳng trong không gian',qs:[
+ {q:'Đường thẳng đi qua M(1; 2; 3) và có vectơ chỉ phương u = (2; −1; 1) có phương trình tham số:',o:['x = 1 + 2t; y = 2 − t; z = 3 + t','x = 2 + t; y = −1 + 2t; z = 1 + 3t','x = 1 − 2t; y = 2 + t; z = 3 − t','x = 1 + t; y = 2 + 2t; z = 3 − t'],a:0,s:'Phương trình tham số: x = x₀ + at, y = y₀ + bt, z = z₀ + ct với điểm (1; 2; 3) và u = (2; −1; 1).'},
+ {q:'Vectơ chỉ phương của đường thẳng (x − 1)/2 = (y + 2)/(−3) = z/4 là:',o:['(1; −2; 0)','(2; −3; 4)','(−1; 2; 4)','(2; 3; 4)'],a:1,s:'Các mẫu số trong phương trình chính tắc là thành phần của vectơ chỉ phương: (2; −3; 4).'},
+ {q:'Điểm nào thuộc đường thẳng có phương trình tham số x = 1 + t; y = 2t; z = 3 − t?',o:['(2; 2; 2)','(0; 0; 0)','(1; 2; 3)','(2; 0; 4)'],a:0,s:'Với t = 1: x = 2, y = 2, z = 2 nên điểm (2; 2; 2) thuộc đường thẳng.'},
+ {q:'Đường thẳng đi qua A(0; 0; 0) và B(1; 2; 3) có một vectơ chỉ phương là:',o:['(1; 2; 3)','(0; 0; 0)','(1; 1; 1)','(2; 2; 3)'],a:0,s:'Vectơ AB = (1; 2; 3) là vectơ chỉ phương của đường thẳng.'},
+ {q:'Hai đường thẳng có vectơ chỉ phương cùng phương và không có điểm chung thì:',o:['Cắt nhau','Trùng nhau','Song song','Chéo nhau'],a:2,s:'Cùng phương và không có điểm chung nghĩa là hai đường thẳng song song.'},
+ {q:'Đường thẳng d có phương trình x/1 = y/2 = z/3 đi qua điểm nào?',o:['(1; 2; 3)','(0; 1; 2)','(3; 2; 1)','(1; 1; 1)'],a:0,s:'Với t = 1 ta được điểm (1; 2; 3).'},
+ {q:'Giao điểm của đường thẳng x = t; y = 1 + t; z = 2 − t với mặt phẳng x + y + z − 4 = 0 là:',o:['(0; 1; 2)','(1; 2; 1)','(2; 3; 0)','Không có giao điểm'],a:1,s:'Thay vào mặt phẳng: t + (1 + t) + (2 − t) = 4 cho t = 1, giao điểm là (1; 2; 1).'},
+ {q:'Đường thẳng song song với trục Ox có một vectơ chỉ phương là:',o:['(0; 1; 0)','(0; 0; 1)','(1; 0; 0)','(1; 1; 1)'],a:2,s:'Trục Ox có vectơ chỉ phương (1; 0; 0), mọi đường thẳng song song với nó cũng vậy.'},
+ {q:'Phương trình chính tắc của đường thẳng qua M(2; 0; −1) với vectơ chỉ phương u = (1; 3; 2) là:',o:['(x − 2)/1 = y/3 = (z + 1)/2','(x + 2)/1 = y/3 = (z − 1)/2','x/1 = (y − 2)/3 = z/2','(x − 2)/2 = (y − 0)/0 = (z + 1)/(−1)'],a:0,s:'Áp dụng công thức (x − x₀)/a = (y − y₀)/b = (z − z₀)/c với (2; 0; −1) và (1; 3; 2).'},
+ {q:'Đường thẳng d nằm trong mặt phẳng (P) khi:',o:['Vectơ chỉ phương của d song song với vectơ pháp tuyến của (P)','Vectơ chỉ phương của d vuông góc với vectơ pháp tuyến của (P) và một điểm của d thuộc (P)','d có đúng một điểm thuộc (P)','d song song với (P)'],a:1,s:'d nằm trong (P) khi hướng của d vuông góc với pháp tuyến của (P) và d có một điểm thuộc (P), khi đó mọi điểm của d đều thuộc (P).'},
+]},
+'mat-cau':{title:'Toán 12 · Phương trình mặt cầu',qs:[
+ {q:'Mặt cầu có tâm I(1; 2; 3) và bán kính R = 2 có phương trình:',o:['(x − 1)² + (y − 2)² + (z − 3)² = 4','(x + 1)² + (y + 2)² + (z + 3)² = 4','(x − 1)² + (y − 2)² + (z − 3)² = 2','x² + y² + z² = 4'],a:0,s:'Phương trình mặt cầu: (x − a)² + (y − b)² + (z − c)² = R² = 4.'},
+ {q:'Tâm của mặt cầu x² + y² + z² − 4x + 2y − 6z + 5 = 0 là:',o:['(4; −2; 6)','(2; −1; 3)','(−2; 1; −3)','(2; 1; 3)'],a:1,s:'Tâm có tọa độ bằng một nửa hệ số của x, y, z đổi dấu: (2; −1; 3).'},
+ {q:'Bán kính của mặt cầu ở câu 2 bằng:',o:['2','3','√5','5'],a:1,s:'R = √(2² + (−1)² + 3² − 5) = √9 = 3.'},
+ {q:'Mặt cầu có tâm I(1; 0; 0) và đi qua gốc tọa độ O có phương trình:',o:['(x − 1)² + y² + z² = 1','x² + y² + z² = 1','(x − 1)² + y² + z² = 2','(x + 1)² + y² + z² = 1'],a:0,s:'Bán kính R = IO = 1 nên phương trình là (x − 1)² + y² + z² = 1.'},
+ {q:'Mặt cầu có đường kính AB với A(0; 0; 0) và B(2; 2; 2) có phương trình:',o:['x² + y² + z² = 12','(x − 1)² + (y − 1)² + (z − 1)² = 3','(x − 1)² + (y − 1)² + (z − 1)² = 12','(x − 2)² + (y − 2)² + (z − 2)² = 3'],a:1,s:'Tâm là trung điểm (1; 1; 1), bán kính bằng nửa AB: AB = √12 = 2√3 nên R² = 3.'},
+ {q:'Điểm M(1; 1; 1) nằm ở đâu so với mặt cầu tâm O bán kính 2?',o:['Nằm ngoài mặt cầu','Nằm trên mặt cầu','Nằm trong mặt cầu','Không xác định được'],a:2,s:'OM = √3 < 2 nên điểm nằm trong mặt cầu.'},
+ {q:'Phương trình x² + y² + z² − 2ax − 2by − 2cz + d = 0 là phương trình mặt cầu khi:',o:['a² + b² + c² − d > 0','a² + b² + c² − d = 0','a² + b² + c² − d < 0','d > 0'],a:0,s:'Điều kiện là a² + b² + c² − d > 0, khi đó bán kính R = √(a² + b² + c² − d).'},
+ {q:'Bán kính của mặt cầu x² + y² + z² = 9 bằng:',o:['9','81','3','√3'],a:2,s:'R² = 9 nên R = 3.'},
+ {q:'Tâm của mặt cầu (x + 2)² + (y − 1)² + z² = 16 là:',o:['(2; −1; 0)','(−2; 1; 0)','(−2; −1; 0)','(2; 1; 0)'],a:1,s:'Tâm có tọa độ (−2; 1; 0) theo dạng chính tắc.'},
+ {q:'Mặt cầu tâm O tiếp xúc với mặt phẳng x + y + z − 3 = 0 có phương trình:',o:['x² + y² + z² = 9','x² + y² + z² = 3','x² + y² + z² = 1','x² + y² + z² = √3'],a:1,s:'Bán kính bằng khoảng cách từ O tới mặt phẳng: 3/√3 = √3, nên R² = 3.'},
+]},
+'xs-dieu-kien':{title:'Toán 12 · Xác suất có điều kiện',qs:[
+ {q:'Công thức xác suất có điều kiện của biến cố A với điều kiện B (P(B) > 0) là:',o:['P(A|B) = P(A ∩ B) · P(B)','P(A|B) = P(A ∩ B) / P(B)','P(A|B) = P(A) / P(B)','P(A|B) = P(A) + P(B)'],a:1,s:'P(A|B) = P(A ∩ B) / P(B).'},
+ {q:'Cho P(A ∩ B) = 0,2 và P(B) = 0,5. Xác suất có điều kiện P(A|B) bằng:',o:['0,1','0,4','0,25','0,7'],a:1,s:'P(A|B) = 0,2 / 0,5 = 0,4.'},
+ {q:'Nếu hai biến cố A và B độc lập thì P(A|B) bằng:',o:['0','P(A)','P(B)','1'],a:1,s:'Độc lập nghĩa là việc B xảy ra không làm thay đổi xác suất của A: P(A|B) = P(A).'},
+ {q:'Một hộp có 3 bi đỏ và 2 bi xanh. Lấy lần lượt hai bi không hoàn lại. Biết bi đầu tiên là bi đỏ, xác suất bi thứ hai cũng là bi đỏ bằng:',o:['3/5','2/5','1/2','3/4'],a:2,s:'Sau khi lấy một bi đỏ, hộp còn 2 bi đỏ và 2 bi xanh, xác suất lấy tiếp bi đỏ là 2/4 = 1/2.'},
+ {q:'Cho P(A ∩ B) = 0,15 và P(A) = 0,3. Xác suất P(B|A) bằng:',o:['0,5','0,045','0,15','0,45'],a:0,s:'P(B|A) = 0,15 / 0,3 = 0,5.'},
+ {q:'Nếu A và B là hai biến cố xung khắc và P(B) > 0 thì P(A|B) bằng:',o:['1','P(A)','0','Không xác định'],a:2,s:'A và B xung khắc nên A ∩ B = ∅, do đó P(A|B) = 0.'},
+ {q:'Một công ty có 70% nhân viên biết tiếng Anh. Trong số nhân viên biết tiếng Anh, 40% biết thêm tiếng Pháp. Xác suất một nhân viên của công ty biết cả hai thứ tiếng bằng:',o:['0,28','0,40','0,70','1,10'],a:0,s:'P(cả hai) = 0,7 · 0,4 = 0,28.'},
+ {q:'Cho P(A|B) = 0,8 và P(B) = 0,25. Xác suất P(A ∩ B) bằng:',o:['0,2','1,05','0,32','0,05'],a:0,s:'P(A ∩ B) = P(A|B) · P(B) = 0,8 · 0,25 = 0,2.'},
+ {q:'Tung một đồng xu hai lần. Biết lần đầu ra mặt ngửa, xác suất lần thứ hai ra mặt ngửa bằng:',o:['1/4','1/2','1','3/4'],a:1,s:'Hai lần tung độc lập nhau nên xác suất vẫn là 1/2.'},
+ {q:'Một hộp có 10 thẻ đánh số từ 1 đến 10. Rút ngẫu nhiên một thẻ, biết thẻ rút được là số chẵn. Xác suất thẻ đó chia hết cho 4 bằng:',o:['1/5','3/10','2/5','1/2'],a:2,s:'Các số chẵn là {2; 4; 6; 8; 10}, trong đó chia hết cho 4 có {4; 8}. Xác suất là 2/5.'},
+]},
+'xs-toan-phan':{title:'Toán 12 · Công thức xác suất toàn phần · Công thức Bayes',qs:[
+ {q:'Theo công thức xác suất toàn phần, với A và Ā tạo thành hệ đầy đủ, P(B) bằng:',o:['P(A) · P(B|A) − P(Ā) · P(B|Ā)','P(A) · P(B|A) + P(Ā) · P(B|Ā)','P(B|A) + P(B|Ā)','P(A) · P(Ā)'],a:1,s:'P(B) = P(A) · P(B|A) + P(Ā) · P(B|Ā).'},
+ {q:'Hộp I có 2 bi đỏ, 3 bi xanh; hộp II có 4 bi đỏ, 1 bi xanh. Chọn ngẫu nhiên một hộp rồi lấy một bi. Xác suất lấy được bi đỏ bằng:',o:['1/2','3/5','2/5','7/10'],a:1,s:'P(đỏ) = (1/2)(2/5) + (1/2)(4/5) = 1/5 + 2/5 = 3/5.'},
+ {q:'Trong bài toán ở câu 2, biết bi lấy ra là bi đỏ. Xác suất bi đó thuộc hộp I bằng:',o:['1/3','2/5','1/2','3/5'],a:0,s:'Theo công thức Bayes: P(hộp I | đỏ) = (1/5) / (3/5) = 1/3.'},
+ {q:'Xưởng A sản xuất 60% sản phẩm của nhà máy với tỉ lệ hỏng 1%, xưởng B sản xuất 40% với tỉ lệ hỏng 2%. Xác suất một sản phẩm của nhà máy bị hỏng bằng:',o:['0,03','0,014','0,02','0,006'],a:1,s:'P(hỏng) = 0,6 · 0,01 + 0,4 · 0,02 = 0,006 + 0,008 = 0,014.'},
+ {q:'Trong bài toán ở câu 4, biết một sản phẩm bị hỏng. Xác suất nó do xưởng A sản xuất bằng:',o:['3/7','4/7','0,6','0,006'],a:0,s:'P(A | hỏng) = 0,006 / 0,014 = 3/7.'},
+ {q:'Hai biến cố A₁ và A₂ tạo thành một hệ đầy đủ khi:',o:['Chúng độc lập nhau','Chúng xung khắc và hợp của chúng bằng không gian mẫu','Chúng có xác suất bằng nhau','Chúng cùng xảy ra'],a:1,s:'Hệ đầy đủ gồm các biến cố xung khắc từng đôi và hợp của chúng là toàn bộ không gian mẫu.'},
+ {q:'Cho P(A) = 0,4; P(B|A) = 0,5; P(B|Ā) = 0,25. Xác suất P(B) bằng:',o:['0,35','0,75','0,2','0,45'],a:0,s:'P(B) = 0,4 · 0,5 + 0,6 · 0,25 = 0,2 + 0,15 = 0,35.'},
+ {q:'Với dữ kiện ở câu 7, xác suất P(A|B) bằng:',o:['0,2','2/7','4/7','0,5'],a:2,s:'P(A|B) = P(A) · P(B|A) / P(B) = 0,2 / 0,35 = 4/7.'},
+ {q:'Công thức xác suất toàn phần tổng quát với hệ đầy đủ A₁, ..., Aₙ là:',o:['P(B) = P(A₁) + ... + P(Aₙ)','P(B) = tổng của các tích P(Aᵢ) · P(B|Aᵢ)','P(B) = P(B|A₁) · ... · P(B|Aₙ)','P(B) = 1 − P(Ā)'],a:1,s:'P(B) = Σ P(Aᵢ) · P(B|Aᵢ) trên toàn bộ hệ đầy đủ.'},
+ {q:'Một bệnh có tỉ lệ mắc trong cộng đồng là 1%. Xét nghiệm cho kết quả dương tính ở 99% người bệnh và dương tính giả ở 2% người khỏe. Xác suất một người ngẫu nhiên có kết quả dương tính bằng:',o:['0,0099','0,0297','0,99','0,0198'],a:1,s:'P(dương tính) = 0,01 · 0,99 + 0,99 · 0,02 = 0,0099 + 0,0198 = 0,0297.'},
+]}
+};
+let cur=null, idx=0, answers={}, secs=0, tick=null, fsize=17;
+const _h = location.hash.slice(1); if (SHEETS[_h]) setTimeout(() => openSheet(_h), 60);
+const gradesEl=document.getElementById('grades');
+gradesEl.innerHTML=LIB.map(g=>`<div class="grade"><h2>📚 ${g.grade}</h2><div class="lessons">${g.lessons.map(l=>l.ready
+  ? `<div class="lesson ready" onclick="openSheet('${l.ready}')">📄 ${l.t}<small>✅ Đã có phiếu · 10 câu · bấm để trình chiếu</small></div>`
+  : `<div class="lesson">📄 ${l.t}<small>Đang biên soạn</small></div>`).join('')}</div></div>`).join('');
+function openSheet(id){
+  cur=SHEETS[id]; idx=0; answers={}; secs=0;
+  document.getElementById('vTitle').textContent=cur.title;
+  document.getElementById('library').style.display='none';
+  document.getElementById('viewer').style.display='block';
+  clearInterval(tick); tick=setInterval(()=>{secs++; document.getElementById('vTime').textContent=String(Math.floor(secs/60)).padStart(2,'0')+':'+String(secs%60).padStart(2,'0');},1000);
+  renderQ(); window.scrollTo({top:0});
+}
+function exitViewer(){
+  clearInterval(tick);
+  document.getElementById('viewer').style.display='none';
+  document.getElementById('library').style.display='block';
+}
+function renderQ(){
+  const item=cur.qs[idx];
+  document.getElementById('vPos').textContent=(idx+1)+'/'+cur.qs.length;
+  document.getElementById('vProg').style.width=((idx+1)/cur.qs.length*100)+'%';
+  document.getElementById('vQ').innerHTML=`<b>Câu ${idx+1}.</b> ${item.q}`;
+  document.getElementById('vQ').style.fontSize=fsize+'px';
+  const chosen=answers[idx];
+  document.getElementById('vOpts').innerHTML=item.o.map((o,i)=>{
+    let cls='opt';
+    if(chosen!==undefined){ if(i===item.a) cls+=' right'; else if(i===chosen) cls+=' wrong'; }
+    return `<button class="${cls}" ${chosen!==undefined?'disabled':''} onclick="choose(${i})"><span class="L">${'ABCD'[i]}.</span>${o}</button>`;
+  }).join('');
+  document.getElementById('vSol').classList.remove('show');
+  document.getElementById('vScore').textContent=Object.keys(answers).filter(k=>answers[k]===cur.qs[k].a).length;
+}
+function choose(i){ answers[idx]=i; renderQ(); }
+function move(d){ idx=Math.min(cur.qs.length-1,Math.max(0,idx+d)); renderQ(); }
+function toggleSol(withSol){
+  const item=cur.qs[idx], box=document.getElementById('vSol');
+  box.innerHTML=withSol?`<b>Lời giải:</b> ${item.s}`:`<b>Đáp án đúng: ${'ABCD'[item.a]}</b> — ${item.o[item.a]}`;
+  box.classList.add('show');
+}
+function fontSize(d){ fsize=Math.min(24,Math.max(13,fsize+d)); document.getElementById('vQ').style.fontSize=fsize+'px'; }
+</script>
+</body>
+</html>
