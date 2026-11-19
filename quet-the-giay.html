@@ -7,7 +7,8 @@
 <link rel="icon" href="data:," />
 <title>Quét Thẻ Giấy Toán 12</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <style>
 :root{
@@ -127,10 +128,10 @@ button.cardnum{cursor:pointer}
 .paper-card .edge.c{bottom:5%;left:50%;transform:translateX(-50%);font-size:clamp(22px,4.5vw,34px)}
 .paper-card .edge.d{top:50%;left:5%;transform:translateY(-50%);font-size:clamp(22px,4.5vw,34px)}
 .paper-card .edge small{display:block;font-size:9px;letter-spacing:.08em;font-weight:700;color:#555}
-.paper-card .orient{position:absolute;top:0;right:0;width:30%;aspect-ratio:1;background:#111;border-radius:0 9px 0 4px}
-.paper-card .codestrip{position:absolute;left:50%;transform:translateX(-50%);bottom:14%;width:72%;height:9%;display:flex;gap:3%;background:#fff;border:2.5px solid #111;border-radius:2px;padding:2px}
-.paper-card .codestrip i{flex:1 1 0;background:#fff;border:1.5px solid #111;border-radius:1px}
-.paper-card .codestrip i.on{background:#111}
+.paper-card .orient{position:absolute;top:0;right:0;width:30%;aspect-ratio:1;background:#111;border-radius:0 9px 0 4px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.paper-card .codestrip{position:absolute;left:50%;transform:translateX(-50%);bottom:14%;width:72%;height:9%;display:flex;gap:3%;background:#fff;border:2.5px solid #111;border-radius:2px;padding:2px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.paper-card .codestrip i{flex:1 1 0;background:#fff;border:1.5px solid #111;border-radius:1px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.paper-card .codestrip i.on{background:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .paper-card .num{font-size:clamp(44px,9vw,76px);font-weight:900;line-height:1;margin-top:16%}
 .paper-card .sname{font-size:clamp(12px,2.4vw,17px);font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .paper-card .foot{position:absolute;bottom:9%;left:0;right:0;font-size:9.5px;color:#666;letter-spacing:.05em}
@@ -257,6 +258,11 @@ canvas#shot{display:none}
 .link-status{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
 .roomcode{font-size:clamp(34px,8vw,52px);font-weight:900;letter-spacing:.18em;text-align:center;background:var(--ink);color:var(--bg);border-radius:14px;padding:14px 10px;margin:12px 0 6px}
 .roomcode small{display:block;font-size:12px;letter-spacing:.06em;font-weight:700;opacity:.8}
+.qrbox{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
+.qrbox #roomQr{background:#fff;padding:8px;border-radius:8px;line-height:0}
+.qrbox #roomQr img,.qrbox #roomQr canvas{display:block}
+.qrbox .qrtext{font-size:13px;color:var(--muted);max-width:320px;text-align:left;word-break:break-all}
+.syncbox{margin-top:12px}
 .rolebtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .rolebtn{border:1.5px solid var(--line);background:var(--surface2);border-radius:999px;padding:9px 14px;font-weight:800;font-size:14px}
 .rolebtn.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -272,6 +278,7 @@ canvas#shot{display:none}
 .lightbox button{position:absolute;top:14px;right:14px}
 .footer-note{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
 @media print{
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
   body{background:#fff}
   .topbar,.tabs,.no-print,.footer-note,.projector,.liveboard-tools{display:none !important}
   .wrap{max-width:none;padding:0}
@@ -282,7 +289,9 @@ canvas#shot{display:none}
   .print-class-block{page-break-before:always}
   .print-class-block:first-child{page-break-before:auto}
   .cards-grid.huge .paper-card{width:132mm;justify-self:center}
-  .paper-card{border-radius:10px}
+  .paper-card{border-radius:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .paper-card .orient{background:#111 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .paper-card .codestrip i.on{background:#111 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
 </head>
@@ -413,6 +422,7 @@ canvas#shot{display:none}
           </select>
         </div>
         <button class="btn secondary" id="previewPrintBtn" type="button">Xem riêng trang in — lớp đang chọn</button>
+        <button class="btn secondary" id="exportPrintBtn" type="button">Xuất file in (.html)</button>
         <button class="btn" id="printNewBtn" type="button">Chỉ in thẻ mới chưa in — lớp đang chọn</button>
         <button class="btn secondary" id="previewAllBtn" type="button">Xem riêng trang in — cả các lớp</button>
         <button class="btn" id="printNewAllBtn" type="button">Chỉ in thẻ mới chưa in — cả các lớp</button>
@@ -420,7 +430,8 @@ canvas#shot{display:none}
       </div>
       <p class="hint" id="printedStatus"></p>
       <p class="hint" id="allPrintedStatus"></p>
-      <p class="hint">Bấm “Xem riêng trang in” để chỉ còn bộ thẻ, rồi dùng lệnh In / “Chia sẻ → In” của trình duyệt để in hoặc lưu PDF. Thẻ nào đã mở trang in trong phiên này được tính là “đã in” — khi có bạn mới, nút “Chỉ in thẻ mới chưa in” chỉ in riêng thẻ của bạn đó. Nếu thầy mở xem mà chưa in thật, bấm “Đánh dấu tất cả là chưa in” để in lại.</p>
+      <p class="hint">Bấm “Xem riêng trang in” để chỉ còn bộ thẻ, rồi dùng lệnh In / “Chia sẻ → In” của trình duyệt để in hoặc lưu PDF — hoặc bấm “Xuất file in (.html)” để tải file thẻ riêng, mang ra tiệm in hoặc mở trên máy khác rồi in. Thẻ nào đã mở trang in trong phiên này được tính là “đã in” — khi có bạn mới, nút “Chỉ in thẻ mới chưa in” chỉ in riêng thẻ của bạn đó. Nếu thầy mở xem mà chưa in thật, bấm “Đánh dấu tất cả là chưa in” để in lại.</p>
+      <p class="hint"><b>Lưu ý khi in:</b> ô đen to ở góc thẻ và các ô đen trong dãy mã số là để máy quét nhận hướng và nhận số thẻ — nếu in ra bị trắng thì trong hộp thoại In của Chrome/Edge, thầy tích thêm “Background graphics” (Đồ họa nền), ở mục More settings. Bản này đã bật sẵn chế độ in màu nền nên trình duyệt mới sẽ in đen đủ, không cần tích thêm.</p>
     </div>
     <div id="cardsArea">
       <div class="cards-grid" id="cardsGrid"></div>
@@ -457,9 +468,22 @@ canvas#shot{display:none}
 
     <div class="card" id="linkPanel">
       <h2>Liên kết trình chiếu — điện thoại quét, máy tính hiện kết quả</h2>
-      <p class="lead">Không cần chiếu màn hình điện thoại. Điện thoại của thầy tạo một <b>mã phòng ngắn</b>, máy tính nối máy chiếu mở cùng đường link app này, chọn “Màn hình trình chiếu” và nhập đúng mã phòng đó là xem được — không cần camera trên máy tính. Mỗi đáp án thầy quét được hoặc chấm tay đều đẩy lên máy tính ngay trong câu đó, dưới dạng bảng xanh – đỏ: đúng màu xanh, sai màu đỏ.</p>
-      <p class="lead"><b>Chưa có cấu hình Firebase thì chưa liên kết được.</b> App không tự giả vờ đã đồng bộ: khi chưa kết nối thật, nút tạo phòng và nút vào xem đều bị khóa và hiện rõ lý do. Lúc đó thầy vẫn dùng cách chiếu màn hình điện thoại (Cast / scrcpy) ở cuối phần này làm dự phòng.</p>
+      <p class="lead">Không cần chiếu màn hình điện thoại. Điện thoại của thầy tạo một <b>mã phòng ngắn</b>, máy tính nối máy chiếu mở cùng đường link app này, chọn “Màn hình trình chiếu” và nhập đúng mã phòng đó là xem được — không cần camera trên máy tính. Mỗi đáp án thầy quét được hoặc chấm tay đều đẩy lên máy tính ngay trong câu đó, dưới dạng bảng đã nhận (xanh dương) — màu đúng/sai (đúng màu xanh lá, sai màu đỏ) chỉ hiện sau khi thầy bấm “Chiếu đáp án đúng”, học sinh không biết trước đáp án.</p>
+      <p class="lead"><b>Không cần nhập cấu hình gì.</b> Bấm “Tạo mã phòng” là có mã phòng 4 ký tự + mã QR ngay, máy tính quét QR hoặc nhập mã là xem được. Đồng bộ chạy qua máy chủ công khai (MQTT), không cần tài khoản, không cần dán cấu hình Firebase. Nếu mạng trường chặn máy chủ đồng bộ, trang sẽ báo rõ và thầy dùng cách chiếu màn hình điện thoại (Cast / scrcpy) ở cuối phần này làm dự phòng.</p>
+      <div class="card syncbox" style="margin-bottom:0">
+        <h3 style="margin:0">Trạng thái đồng bộ</h3>
+        <p class="hint" id="syncStatus" style="margin-top:6px"><b>Chưa kết nối.</b> Bấm “Tạo mã phòng” (điện thoại giáo viên) hoặc “Vào xem trình chiếu” (máy tính) để tự kết nối — không cần nhập cấu hình gì.</p>
+        <p class="hint" id="syncBroker">Máy chủ đồng bộ: chưa kết nối.</p>
+        <p class="hint" id="lastSyncTime">Đồng bộ lần cuối: chưa có.</p>
+        <div class="btnrow">
+          <button class="btn secondary small" id="syncTestBtn" type="button">Kiểm tra kết nối</button>
+        </div>
+        <p class="hint" id="syncTestMsg"></p>
+      </div>
 
+      <details id="firebaseAdvanced">
+        <summary>Nâng cao (tùy chọn) — dùng Firebase riêng của thầy</summary>
+        <div style="margin-top:10px">
       <h3 style="margin-top:14px">1 · Cấu hình Firebase của thầy (nhập trên từng thiết bị, chỉ nằm trong trang đang mở)</h3>
       <p class="hint">Dùng Firebase Realtime Database của chính thầy, giống kiểu phòng thi của Rung Chuông Vàng. Lấy cấu hình ở Firebase Console → Project settings → Your apps → Web app, rồi dán nguyên khối cấu hình vào đây. Cấu hình chỉ lưu trong phiên mở trang này, đóng trang là phải nhập lại — thầy nhập cùng một cấu hình trên cả điện thoại và máy tính.</p>
       <label for="firebaseConfigInput">Dán cấu hình Firebase (dạng JSON hoặc khối firebaseConfig)</label>
@@ -479,6 +503,8 @@ canvas#shot{display:none}
           <p>3. Ở Realtime Database → <b>Rules</b>, trong giờ học đặt quyền cho nhánh của app này, ví dụ: <b>{"rules":{"quetthe":{".read":true,".write":true}}}</b>. Chỉ dùng quyền mở trong buổi học, sau buổi học thầy khóa lại theo nhu cầu của trường. Nếu Rules chặn ghi, điện thoại sẽ báo “Quyền Firebase bị từ chối” và không đẩy được kết quả — đó là kết nối thật bị chặn, không phải đã đồng bộ.</p>
         </div>
       </details>
+        </div>
+      </details>
 
       <div class="rolebtns" role="group" aria-label="Chọn vai trò của thiết bị này">
         <button class="rolebtn on" id="roleTeacherBtn" type="button" aria-pressed="true">Tôi là giáo viên quét — điện thoại</button>
@@ -489,16 +515,20 @@ canvas#shot{display:none}
         <h3>2 · Điện thoại giáo viên: tạo mã phòng</h3>
         <p class="hint">Tạo mã phòng trước hoặc trong lúc quét đều được, nhưng phải tạo trước khi máy tính vào xem. Giữ điện thoại mở app trong suốt buổi quét — đóng app là máy tính hiện “đang chờ giáo viên quét”.</p>
         <div class="btnrow">
-          <button class="btn gold" id="createRoomBtn" type="button" disabled>Tạo mã phòng</button>
+          <button class="btn gold" id="createRoomBtn" type="button">Tạo mã phòng</button>
           <button class="btn secondary" id="stopRoomBtn" type="button" disabled>Dừng liên kết trình chiếu</button>
         </div>
         <div id="roomCodeBox" style="display:none">
           <div class="roomcode"><small>MÃ PHÒNG — ĐỌC CHO MÁY TÍNH NHẬP</small><span id="roomCodeText">····</span></div>
-          <p class="hint" style="text-align:center" id="roomCodeHint">Trên máy tính: mở cùng đường link app → bấm “Màn hình trình chiếu (máy tính)” ở đầu trang → nhập mã phòng trên.</p>
+          <div class="qrbox" id="roomQrBox">
+            <div id="roomQr"></div>
+            <div class="qrtext"><b>Quét mã QR này bằng điện thoại / máy tính</b> để mở đúng trang này và tự vào phòng. Nếu quét không được, nhập mã phòng 4 ký tự ở trên bằng tay. <span id="roomQrLink"></span><br><span id="roomQrNote"></span></div>
+          </div>
+          <p class="hint" style="text-align:center" id="roomCodeHint">Trên máy tính: mở cùng đường link app → bấm “Màn hình trình chiếu (máy tính)” ở đầu trang → nhập mã phòng trên, hoặc quét mã QR này.</p>
           <p class="hint" id="roomStatus">Đang chờ đẩy kết quả…</p>
           <p class="hint" id="viewerCount"></p>
         </div>
-        <p class="hint" id="teacherLinkStatus">Chưa tạo mã phòng. Kết nối Firebase ở bước 1 trước.</p>
+        <p class="hint" id="teacherLinkStatus">Chưa tạo mã phòng. Bấm “Tạo mã phòng” ở trên là có mã ngay — không cần nhập cấu hình gì.</p>
       </div>
 
       <div class="linkbox" id="presenterLinkBox" style="display:none">
@@ -507,17 +537,17 @@ canvas#shot{display:none}
         <label for="roomCodeInput">Mã phòng (4 ký tự, không phân biệt hoa / thường)</label>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <input type="text" id="roomCodeInput" class="code-input" maxlength="4" autocomplete="off" placeholder="····" style="flex:0 1 220px" />
-          <button class="btn" id="joinRoomBtn" type="button" disabled>Vào xem trình chiếu</button>
+          <button class="btn" id="joinRoomBtn" type="button">Vào xem trình chiếu</button>
           <button class="btn secondary" id="leaveRoomBtn" type="button" disabled>Rời màn hình trình chiếu</button>
         </div>
-        <p class="hint" id="presenterStatus">Chưa vào phòng nào. Kết nối Firebase ở bước 1 trước, rồi nhập mã phòng.</p>
+        <p class="hint" id="presenterStatus">Chưa vào phòng nào. Nhập mã phòng 4 ký tự rồi bấm “Vào xem trình chiếu” — hoặc mở link trong mã QR là tự vào.</p>
       </div>
 
       <details>
-        <summary>Dự phòng khi chưa có Firebase: chiếu màn hình điện thoại (Cast / scrcpy)</summary>
+        <summary>Dự phòng khi không kết nối được máy chủ đồng bộ: chiếu màn hình điện thoại (Cast / scrcpy)</summary>
         <div style="font-size:14px;margin-top:10px">
           <p><b>Android + laptop nối HDMI (cách đã dùng trước đây):</b> laptop nối máy chiếu bằng HDMI, bấm Win + P chọn Duplicate. Trên laptop mở app Wireless Display (Settings → System → Projecting to this PC, Available everywhere; nếu chưa có thì cài tính năng Wireless Display). Điện thoại và laptop cùng WiFi, vuốt xuống bấm Smart View / Truyền / Cast, chọn tên laptop.</p>
-          <p><b>Cách có dây ổn định khi WiFi yếu:</b> bật Gỡ lỗi USB trên điện thoại, cắm cáp vào laptop, chạy scrcpy, phóng to cửa sổ điện thoại lên máy chiếu. Cách này chỉ chiếu đúng những gì trên điện thoại, không phải liên kết trình chiếu — khi nào có Firebase thì dùng mã phòng ở trên thay cho cách này.</p>
+          <p><b>Cách có dây ổn định khi WiFi yếu:</b> bật Gỡ lỗi USB trên điện thoại, cắm cáp vào laptop, chạy scrcpy, phóng to cửa sổ điện thoại lên máy chiếu. Cách này chỉ chiếu đúng những gì trên điện thoại, không phải liên kết trình chiếu — khi nào kết nối được máy chủ đồng bộ thì dùng mã phòng ở trên thay cho cách này.</p>
         </div>
       </details>
     </div>
@@ -550,10 +580,10 @@ canvas#shot{display:none}
       <div class="liveboard-top">
         <div>
           <h3>Bảng kết quả trực tiếp — cả lớp nhìn lên là thấy</h3>
-          <p class="lead" style="max-width:640px">Mỗi ô là một học sinh, xếp theo số thẻ cố định. Thầy quét được thẻ nào, ô đó đổi màu ngay: <b style="color:#16a34a">xanh là đúng</b>, <b style="color:#dc2626">đỏ là sai</b>, kèm chữ ĐÚNG / SAI và đáp án em đó chọn. Chưa có thẻ thì ô vẫn xám. Bảng này tự đổi màu theo cả camera, ảnh tĩnh và bảng chấm nhanh.</p>
+          <p class="lead" style="max-width:640px">Mỗi ô là một học sinh, xếp theo số thẻ cố định. Thầy quét được thẻ nào, ô đó đổi thành xanh dương kèm chữ ĐÃ NHẬN và đáp án em đó chọn. Màu đúng/sai (<b style="color:#16a34a">xanh lá là đúng</b>, <b style="color:#dc2626">đỏ là sai</b>) chỉ hiện sau khi thầy bấm “Chiếu đáp án đúng” — học sinh không biết trước đáp án. Nút “Tô màu đúng / sai: ngay khi quét” chỉ đổi bảng trên điện thoại của thầy, không đổi màn hình chiếu. Chưa có thẻ thì ô vẫn xám. Bảng này tự đổi màu theo cả camera, ảnh tĩnh và bảng chấm nhanh.</p>
         </div>
         <div class="liveboard-tools">
-          <button class="btn secondary small" id="colorModeBtn" type="button" aria-pressed="true">Tô màu đúng / sai: ngay khi quét</button>
+          <button class="btn secondary small" id="colorModeBtn" type="button" aria-pressed="false">Tô màu đúng / sai: chỉ sau khi chiếu đáp án</button>
           <button class="btn small" id="projectorBtn" type="button">Mở màn hình chiếu cả lớp</button>
         </div>
       </div>
@@ -575,6 +605,7 @@ canvas#shot{display:none}
         <div class="btnrow">
           <button class="btn" id="camOnBtn" type="button">Mở camera sau</button>
           <button class="btn secondary" id="camOffBtn" type="button" disabled>Tắt camera</button>
+          <button class="btn secondary" id="camCheckBtn" type="button">Kiểm tra camera</button>
         </div>
         <div class="zoomrow" id="zoomRow">
           <span style="font-weight:700;font-size:13px">Phóng to cho thẻ ở xa:</span>
@@ -593,6 +624,11 @@ canvas#shot{display:none}
         </div>
         <div class="btnrow">
           <button class="btn secondary" id="photoBtn" type="button">Chụp bằng máy ảnh của điện thoại</button>
+        </div>
+        <div class="warnbox" id="camFallback" style="display:none;margin-top:12px">
+          <b>Camera trong trang không mở được trên điện thoại này — vẫn quét được bằng cách khác:</b>
+          bấm nút dưới đây để mở thẳng máy ảnh của điện thoại, chụp cả lớp trong một ảnh, máy sẽ phân tích ảnh đó như quét video. Cách này chạy được cả khi mở file trực tiếp (file://) hoặc mở trong Zalo / Facebook / Messenger.
+          <div style="margin-top:10px"><button class="btn gold" id="camFallbackBtn" type="button">Chụp bằng máy ảnh của điện thoại</button></div>
         </div>
         <input type="file" id="photoInput" accept="image/*" capture="environment" hidden />
         <p class="hint" id="sweepStatus">Mở camera rồi bấm “Quét cả lớp”, hoặc bấm “Ảnh tĩnh nét cao” để phân tích một ảnh rõ. Máy quét liên tục; thầy giữ máy yên 2–3 giây cho mỗi góc nhìn để máy kịp nhận hết thẻ trong khung.</p>
@@ -1263,6 +1299,78 @@ el("previewPrintBtn").addEventListener("click", function(){
   renderCards();
   showPrintArea();
 });
+/* Xuất file in (.html): file độc lập chỉ chứa bộ thẻ, mở được một mình,
+   không cần file gốc, không cần mạng. Dùng đúng danh sách như
+   renderCards đang hiện (cả các lớp / chỉ thẻ mới / lớp đang chọn).
+   Không đổi trạng thái "đã in" khi xuất file. */
+el("exportPrintBtn").addEventListener("click", function(){
+  var sizeCls = el("cardSize").value==="compact" ? " compact" : (el("cardSize").value==="huge" ? " huge" : "");
+  var title = "", body = "";
+  if(printAllClasses){
+    title = "tat-ca-cac-lop";
+    body = classes.map(function(c){
+      var list = c.students.slice().sort(function(a,b){return a.card-b.card;});
+      if(printFilterIds) list = list.filter(function(s){ return printFilterIds.indexOf(s.id)>=0; });
+      if(!list.length) return "";
+      return '<div class="print-class-block"><h2 class="print-class-title">' + esc(c.name) + ' — ' + list.length + ' thẻ cố định</h2>' +
+        '<div class="cards-grid' + sizeCls + '">' + list.map(function(s){ return cardHtml(s, c.name); }).join("") + '</div></div>';
+    }).join("");
+  } else {
+    var ordered = sortedStudents();
+    var printList = printFilterIds ? ordered.filter(function(s){ return printFilterIds.indexOf(s.id)>=0; }) : ordered;
+    if(!printList.length){
+      el("printedStatus").textContent = "Chưa có học sinh nên chưa có thẻ nào để xuất. Thêm học sinh ở phần “Lớp học” trước.";
+      return;
+    }
+    title = String(activeClassName() || "lop");
+    body = '<div class="cards-grid' + sizeCls + '">' + printList.map(function(s){ return cardHtml(s); }).join("") + '</div>';
+  }
+  if(!body){
+    el("printedStatus").textContent = "Chưa có thẻ nào để xuất file in.";
+    return;
+  }
+  var css = [
+    '*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
+    'body{margin:0;padding:16px;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:#fff;color:#111}',
+    '.print-note{font-size:14px;background:#fef9c3;border:1px solid #eab308;border-radius:8px;padding:10px 12px;margin:0 0 14px}',
+    '@media print{.print-note{display:none}}',
+    '.cards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px}',
+    '.cards-grid.compact{grid-template-columns:repeat(3,1fr)}',
+    '.cards-grid.huge{grid-template-columns:1fr;max-width:620px;margin-left:auto;margin-right:auto}',
+    '.print-class-title{font-size:20px;font-weight:800;margin:6px 0 12px}',
+    '.print-class-block{margin-bottom:18px}',
+    '.paper-card{position:relative;background:#fff;color:#111;border:5px solid #111;border-radius:14px;aspect-ratio:1/1;padding:9% 7% 7%;text-align:center;overflow:hidden;page-break-inside:avoid}',
+    '.paper-card .edge{position:absolute;font-weight:900;line-height:1}',
+    '.paper-card .edge.a{top:5%;left:50%;transform:translateX(-50%);font-size:clamp(22px,4.5vw,34px)}',
+    '.paper-card .edge.b{top:50%;right:5%;transform:translateY(-50%);font-size:clamp(22px,4.5vw,34px)}',
+    '.paper-card .edge.c{bottom:5%;left:50%;transform:translateX(-50%);font-size:clamp(22px,4.5vw,34px)}',
+    '.paper-card .edge.d{top:50%;left:5%;transform:translateY(-50%);font-size:clamp(22px,4.5vw,34px)}',
+    '.paper-card .edge small{display:block;font-size:9px;letter-spacing:.08em;font-weight:700;color:#555}',
+    '.paper-card .orient{position:absolute;top:0;right:0;width:30%;aspect-ratio:1;background:#111;border-radius:0 9px 0 4px;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
+    '.paper-card .codestrip{position:absolute;left:50%;transform:translateX(-50%);bottom:14%;width:72%;height:9%;display:flex;gap:3%;background:#fff;border:2.5px solid #111;border-radius:2px;padding:2px;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
+    '.paper-card .codestrip i{flex:1 1 0;background:#fff;border:1.5px solid #111;border-radius:1px;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
+    '.paper-card .codestrip i.on{background:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
+    '.paper-card .num{font-size:clamp(44px,9vw,76px);font-weight:900;line-height:1;margin-top:16%}',
+    '.paper-card .sname{font-size:clamp(12px,2.4vw,17px);font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+    '.paper-card .foot{position:absolute;bottom:9%;left:0;right:0;font-size:9.5px;color:#666;letter-spacing:.05em}',
+    '.paper-card .cut{position:absolute;top:6%;left:6%;font-size:10px;color:#999}',
+    '@page{size:A4;margin:12mm}',
+    '@media print{body{padding:0}.cards-grid{gap:10px}.print-class-block{page-break-before:always}.print-class-block:first-child{page-break-before:auto}.cards-grid.huge .paper-card{width:132mm;justify-self:center}.paper-card{border-radius:10px}}'
+  ].join("\n");
+  var html = '<!DOCTYPE html>\n<html lang="vi">\n<head>\n<meta charset="utf-8">\n<title>Thẻ giấy — ' + esc(title) + '</title>\n<style>\n' + css + '\n</style>\n</head>\n<body>\n' +
+    '<p class="print-note">Mở file này rồi bấm Ctrl+P (hoặc Cmd+P) để in hoặc lưu PDF. Nếu ô đen ở góc thẻ và dãy mã số in ra bị trắng, trong hộp thoại In thầy tích thêm “Background graphics” (Đồ họa nền) ở mục More settings. File này in một mình, không cần mạng.</p>\n' +
+    body + '\n</body>\n</html>';
+  var d = new Date();
+  var stamp = d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0"+d.getDate()).slice(-2);
+  var slug = String(title).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "lop";
+  var fname = "the-giay-" + slug + "-" + stamp + ".html";
+  var blob = new Blob([html], {type: "text/html;charset=utf-8"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = fname; document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 1000);
+  el("printedStatus").textContent = "Đã xuất file " + fname + " — mở file đó trên máy nào cũng in được, không cần file gốc.";
+});
 el("printNewBtn").addEventListener("click", function(){
   if(!students.length){
     el("cardsEmpty").textContent = "Chưa có học sinh nên chưa có thẻ nào để in. Thêm học sinh ở phần “Lớp học” trước.";
@@ -1735,12 +1843,24 @@ function recordAnswer(studentId, letter){
   if(typeof pushRoomAnswer==="function") pushRoomAnswer(studentId, letter);
 }
 /* ---- Bảng kết quả trực tiếp: xanh = đúng, đỏ = sai ---- */
-var showImmediateColors = true;
+var showImmediateColors = false;
 var lastScannedId = null;
-function boardTileState(studentId, picked){
+/* Bảng của riêng thầy trên điện thoại: nút "Tô màu đúng / sai" chỉ đổi
+   bảng này, không bao giờ đổi màn hình chiếu. */
+function boardTileStateLocal(studentId, picked){
   if(!picked) return "empty";
   if(!session) return "empty";
   if(showImmediateColors || session.revealed){
+    return picked===LETTERS[questions[session.index].correct] ? "correct" : "wrong";
+  }
+  return "answered";
+}
+/* Màn hình chiếu: chỉ tô đúng/sai sau khi thầy bấm "Chiếu đáp án đúng".
+   Trước đó ô đã quét chỉ là "answered" (xanh dương ĐÃ NHẬN). */
+function boardTileState(studentId, picked){
+  if(!picked) return "empty";
+  if(!session) return "empty";
+  if(session.revealed){
     return picked===LETTERS[questions[session.index].correct] ? "correct" : "wrong";
   }
   return "answered";
@@ -1771,27 +1891,35 @@ function renderLiveBoard(){
   if(!grid) return;
   var ans = session ? currentAnswers() : {};
   grid.innerHTML = sortedStudents().map(function(s){
-    return boardTileHtml(s, ans[s.id]||"", boardTileState(s.id, ans[s.id]), s.id===lastScannedId);
+    return boardTileHtml(s, ans[s.id]||"", boardTileStateLocal(s.id, ans[s.id]), s.id===lastScannedId);
   }).join("") || '<p class="hint">Chưa có học sinh. Thêm ở phần “Lớp học”.</p>';
   var c = boardCounts();
-  el("lbCorrect").textContent = c.correct;
-  el("lbWrong").textContent = c.wrong;
+  var revealed = !!(session && session.revealed);
+  /* Trước khi chiếu đáp án thì phần tóm tắt không lộ số đúng/sai:
+     hiện "—", thanh tỉ lệ chỉ hiện phần chưa có thẻ. Sau khi chiếu đáp
+     án mới hiện số đúng/sai. */
+  el("lbCorrect").textContent = revealed ? c.correct : "—";
+  el("lbWrong").textContent = revealed ? c.wrong : "—";
   el("lbWaiting").textContent = c.waiting;
   var total = Math.max(1, students.length);
-  el("lbBarOk").style.width = Math.round(c.correct/total*100) + "%";
-  el("lbBarBad").style.width = Math.round(c.wrong/total*100) + "%";
+  el("lbBarOk").style.width = revealed ? Math.round(c.correct/total*100) + "%" : "0%";
+  el("lbBarBad").style.width = revealed ? Math.round(c.wrong/total*100) + "%" : "0%";
   el("lbBarWait").style.width = Math.round(c.waiting/total*100) + "%";
   el("liveBoardHint").textContent = !session
     ? "Chưa bắt đầu buổi chấm — các ô đang chờ. Bấm “Bắt đầu buổi chấm” ở trên, rồi quét: ô nào vừa quét sẽ viền vàng để cả lớp thấy."
     : (c.got >= students.length && students.length
-      ? "Đủ cả lớp rồi: " + c.correct + " đúng (xanh), " + c.wrong + " sai (đỏ). Thầy chiếu đáp án hoặc sang câu tiếp theo."
-      : "Đang chấm câu " + (session.index+1) + ": " + c.correct + " đúng (xanh) · " + c.wrong + " sai (đỏ) · " + c.waiting + " chưa có thẻ. Quét tiếp để các ô còn xám đổi màu.");
+      ? (revealed
+        ? "Đủ cả lớp rồi: " + c.correct + " đúng (xanh), " + c.wrong + " sai (đỏ). Thầy sang câu tiếp theo."
+        : "Đủ cả lớp rồi: đã nhận " + c.got + "/" + students.length + ". Thầy bấm “Chiếu đáp án đúng” để hiện đúng/sai.")
+      : (revealed
+        ? "Đang chấm câu " + (session.index+1) + ": " + c.correct + " đúng (xanh) · " + c.wrong + " sai (đỏ) · " + c.waiting + " chưa có thẻ. Quét tiếp để các ô còn xám đổi màu."
+        : "Đang chấm câu " + (session.index+1) + ": đã nhận " + c.got + "/" + students.length + " · " + c.waiting + " chưa có thẻ. Quét tiếp để các ô còn xám đổi thành ĐÃ NHẬN — màu đúng/sai chỉ hiện sau khi thầy bấm “Chiếu đáp án đúng”."));
   renderProjector();
 }
 function renderProjector(){
   var overlay = el("projectorOverlay");
   if(!overlay || !overlay.classList.contains("open")) return;
-  /* Màn hình trình chiếu liên kết (máy tính) do dữ liệu Firebase điều khiển:
+  /* Màn hình trình chiếu liên kết (máy tính) do dữ liệu từ máy chủ đồng bộ điều khiển:
      không để bảng cục bộ ghi đè lên dữ liệu từ xa. */
   if(typeof isPresenter!=="undefined" && isPresenter){
     if(typeof renderRemoteBoard==="function") renderRemoteBoard();
@@ -1805,13 +1933,14 @@ function renderProjector(){
   el("projTimer").textContent = session ? (session.timeLeft + "s") : "";
   el("projQText").innerHTML = q ? renderMathInText(q.text) : "Chưa bắt đầu buổi chấm. Thầy thoát màn hình này, bấm “Bắt đầu buổi chấm” rồi mở lại màn hình chiếu.";
   el("projOpts").innerHTML = q ? q.options.map(function(o,oi){
-    var cls = "proj-opt " + LETTERS[oi] + ((showImmediateColors || session.revealed) && oi===q.correct ? " reveal-correct" : "");
+    /* Đáp án đúng trên màn chiếu chỉ tô xanh khi thầy đã bấm "Chiếu đáp án đúng". */
+    var cls = "proj-opt " + LETTERS[oi] + (session.revealed && oi===q.correct ? " reveal-correct" : "");
     return '<div class="'+cls+'"><span class="letter">'+LETTERS[oi]+'</span><span>'+renderMathInText(o)+'</span></div>';
   }).join("") : "";
   var c = boardCounts();
-  el("projStats").innerHTML = session
+  el("projStats").innerHTML = !session ? "" : (session.revealed
     ? '<span class="ok">✓ Đúng: '+c.correct+'</span><span class="bad">✗ Sai: '+c.wrong+'</span><span class="wait">Chưa có thẻ: '+c.waiting+' / '+students.length+'</span>'
-    : "";
+    : '<span class="wait">Đã nhận: '+c.got+' / '+students.length+'</span><span class="wait">Chưa có thẻ: '+c.waiting+' / '+students.length+'</span>');
   var ans = session ? currentAnswers() : {};
   el("projGrid").innerHTML = sortedStudents().map(function(s){
     return boardTileHtml(s, ans[s.id]||"", boardTileState(s.id, ans[s.id]), s.id===lastScannedId);
@@ -2131,9 +2260,61 @@ function stopCamera(){
   captureZoom = 1;
   el("sweepStatus").textContent = "Camera đã tắt.";
 }
+/* Chẩn đoán vì sao camera chạy trên máy tính mà không chạy trên điện thoại:
+   máy tính thường mở trang qua https (link Muse / Live Server / localhost)
+   nên trình duyệt cho dùng camera; điện thoại hay mở file tải về trực tiếp
+   (file://) hoặc mở trong Zalo / Facebook / Messenger — trình duyệt trong
+   app và file:// trên điện thoại đều chặn camera trong trang, không hỏi quyền. */
+function camDiagnosis(){
+  var ua = navigator.userAgent || "";
+  var isIOS = /iPhone|iPad|iPod/.test(ua);
+  var isAndroid = /Android/.test(ua);
+  var inApp = /FBAN|FBAV|Zalo|Messenger|Instagram|Line\/|TikTok|GSA\//.test(ua);
+  var proto = location.protocol || "";
+  var hasGUM = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  var device = isIOS ? "iPhone/iPad" : (isAndroid ? "Android" : "máy tính");
+  var openHow = proto==="file:" ? "đang mở file trực tiếp (file://)" : (proto==="https:" ? "đang mở qua link https" : (proto==="http:" ? "đang mở qua link http" : "đang mở qua " + proto));
+  var reason = "";
+  if(inApp) reason = "Đang mở trong trình duyệt của Zalo/Facebook/Messenger — trình duyệt trong app chặn camera trong trang. Thầy bấm dấu ⋯ hoặc ⋮ rồi chọn “Mở bằng trình duyệt” (Chrome/Safari) để mở lại trang.";
+  else if(proto==="file:") reason = "Đang mở file trực tiếp (file://) nên trình duyệt trên điện thoại chặn camera trong trang, dù trên máy tính vẫn cho. Thầy mở trang qua link https (link Muse / hosting) bằng Chrome (Android) hoặc Safari (iPhone) thì camera mới chạy.";
+  else if(!hasGUM) reason = "Trình duyệt này không hỗ trợ camera trong trang.";
+  else if(window.isSecureContext === false) reason = "Trang đang mở không phải qua kết nối an toàn (https) nên trình duyệt chặn camera.";
+  else reason = "Trình duyệt hỗ trợ camera. Nếu bấm “Mở camera sau” mà không được, khả năng là thầy đã bấm Chặn ở lần hỏi quyền trước — bấm biểu tượng ổ khóa trên thanh địa chỉ, bật lại quyền Camera rồi bấm lại.";
+  return {device:device, openHow:openHow, hasGUM:hasGUM, inApp:inApp, reason:reason};
+}
+function showCamFallback(show){
+  var box = el("camFallback");
+  if(box) box.style.display = show ? "block" : "none";
+}
+el("camCheckBtn").addEventListener("click", function(){
+  var d = camDiagnosis();
+  el("camMsg").textContent = "Kiểm tra camera — thiết bị: " + d.device + " · " + d.openHow + " · camera trong trang: " + (d.hasGUM ? "trình duyệt hỗ trợ" : "trình duyệt KHÔNG hỗ trợ") + ". " + d.reason;
+});
+el("camFallbackBtn").addEventListener("click", function(){ el("photoInput").click(); });
+(function(){
+  try{
+    if(location.protocol==="file:" && /Android|iPhone|iPad|iPod/.test(navigator.userAgent||"")){
+      var m = el("camMsg");
+      if(m) m.textContent = "Đang mở file trực tiếp trên điện thoại (file://) — camera trong trang sẽ bị chặn trên điện thoại, dù trên máy tính vẫn chạy. Thầy mở trang qua link https bằng Chrome/Safari, hoặc bấm “Kiểm tra camera” để xem rõ lý do; trong lúc chờ, dùng nút “Chụp bằng máy ảnh của điện thoại” ở dưới để quét bằng ảnh.";
+      showCamFallback(true);
+    }
+  }catch(e){}
+})();
 el("camOnBtn").addEventListener("click", function(){
+  var diag = camDiagnosis();
+  if(diag.inApp || location.protocol==="file:"){
+    el("camMsg").textContent = diag.reason + " Trong lúc chờ, thầy vẫn quét được bằng nút “Chụp bằng máy ảnh của điện thoại” ở dưới — cách đó mở thẳng máy ảnh của máy nên không bị chặn.";
+    showCamFallback(true);
+    return;
+  }
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
     el("camMsg").textContent = "Trình duyệt này không mở được camera trong trang. Thầy bấm “Chụp bằng máy ảnh của điện thoại” ở trên — cách đó dùng máy ảnh của máy nên vẫn quét được cả lớp trong một ảnh.";
+    showCamFallback(true);
+    return;
+  }
+  if(window.isSecureContext === false){
+    el("camMsg").textContent = "File đang mở dạng file:// nên trình duyệt chặn camera. Thầy mở file qua http (ví dụ Live Server, hoặc đưa file lên hosting) thì camera mới chạy; hoặc dùng nút “Chụp bằng máy ảnh của điện thoại” ở dưới.";
+    showCamFallback(true);
     return;
   }
   el("camMsg").textContent = "Đang xin quyền camera…";
@@ -2144,9 +2325,11 @@ el("camOnBtn").addEventListener("click", function(){
     {video:true, audio:false}
   ];
   var attempt = 0;
+  var lastCamErr = null;
   function tryNext(){
     if(attempt>=tries.length){
-      el("camMsg").textContent = "Không mở được camera. Thầy kiểm tra: đã bấm Cho phép khi trình duyệt hỏi chưa, camera có đang bị app khác giữ không, và thử mở lại bằng Chrome (Android) hoặc Safari (iPhone). Cách chắc chắn nhất: bấm “Chụp bằng máy ảnh của điện thoại” ở trên.";
+      el("camMsg").textContent = "Không mở được camera (" + (lastCamErr && lastCamErr.name ? lastCamErr.name : "lỗi không rõ") + "). Thầy thử 1 trong 3 cách: 1) bấm biểu tượng ổ khóa trên thanh địa chỉ, bật quyền Camera cho trang này rồi bấm “Mở camera sau” lại; 2) mở file qua http (Live Server hoặc hosting) thay vì mở dạng file://; 3) dùng nút “Chụp bằng máy ảnh của điện thoại” ở dưới.";
+      showCamFallback(true);
       return;
     }
     navigator.mediaDevices.getUserMedia(tries[attempt++]).then(function(s){
@@ -2156,6 +2339,7 @@ el("camOnBtn").addEventListener("click", function(){
       var played = video.play ? video.play() : null;
       if(played && played.catch) played.catch(function(){});
       el("camMsg").textContent = "Camera đã mở. Giơ máy lên, đưa cả lớp vào khung, rồi bấm “Quét cả lớp” — máy tự nhận nhiều thẻ cùng lúc.";
+      showCamFallback(false);
       el("snapClassBtn").disabled = false;
       el("stillBtn").disabled = false;
       el("camOffBtn").disabled = false;
@@ -2164,11 +2348,14 @@ el("camOnBtn").addEventListener("click", function(){
       el("zoomRow").classList.add("show");
       setZoom(1, true);
     }).catch(function(err){
+      lastCamErr = err;
       if(err && err.name==="NotAllowedError"){
-        el("camMsg").textContent = "Trình duyệt đã chặn quyền camera. Thầy bấm biểu tượng ổ khóa/camera trên thanh địa chỉ, bật lại quyền Camera cho trang này rồi bấm “Mở camera sau” lại — hoặc dùng nút “Chụp bằng máy ảnh của điện thoại”.";
+        el("camMsg").textContent = "Không mở được camera (NotAllowedError — trình duyệt đã chặn quyền camera). Thầy thử 1 trong 3 cách: 1) bấm biểu tượng ổ khóa trên thanh địa chỉ, bật quyền Camera cho trang này rồi bấm “Mở camera sau” lại; 2) mở file qua http (Live Server hoặc hosting) thay vì mở dạng file://; 3) dùng nút “Chụp bằng máy ảnh của điện thoại” ở dưới.";
+        showCamFallback(true);
       } else if(attempt<tries.length){ tryNext(); }
       else {
-        el("camMsg").textContent = "Không mở được camera ("+(err&&err.name?err.name:"lỗi không rõ")+"). Thầy dùng nút “Chụp bằng máy ảnh của điện thoại” ở trên, hoặc bảng “Chấm nhanh cả lớp” bên cạnh.";
+        el("camMsg").textContent = "Không mở được camera ("+(err&&err.name?err.name:"lỗi không rõ")+"). Thầy thử 1 trong 3 cách: 1) bấm biểu tượng ổ khóa trên thanh địa chỉ, bật quyền Camera cho trang này rồi bấm “Mở camera sau” lại; 2) mở file qua http (Live Server hoặc hosting) thay vì mở dạng file://; 3) dùng nút “Chụp bằng máy ảnh của điện thoại” ở dưới, hoặc bảng “Chấm nhanh cả lớp” bên cạnh.";
+        showCamFallback(true);
       }
     });
   }
@@ -2183,7 +2370,7 @@ function setZoom(z, silent){
     try{
       var caps = track.getCapabilities();
       if(caps.zoom && z>=caps.zoom.min && z<=caps.zoom.max){
-        track.applyConstraints({advanced:[{zoom:z}]}).then(function(){ captureZoom = 1; }).catch(function(){ captureZoom = z; });
+        track.applyConstraints({advanced:[{zoom:z}]}).then(function(){ captureZoom = z; }).catch(function(){ captureZoom = z; });
       }
     }catch(e){ captureZoom = z; }
   }
@@ -2200,8 +2387,8 @@ el("sweepBtn").addEventListener("click", function(){
   if(!ensureSession()) return;
   sweepOn = true; sweepQuestion = session.index; pendingDets = []; detHistory = {}; posHistory = {};
   el("sweepBtn").textContent = "Quét cả lớp: Bật — bấm để dừng";
-  el("sweepStatus").textContent = "Đang quét cả lớp: giữ máy yên 2–3 giây cho mỗi góc nhìn. Một thẻ phải thấy giống nhau ở 2 khung hình liên tiếp mới tự ghi — để chống rung tay và nhòe. Thẻ chưa chắc hiện ở dưới để thầy xác nhận.";
-  sweepTimer = setInterval(sweepTick, 400);
+  el("sweepStatus").textContent = "Đang quét cả lớp: giữ máy yên 2–3 giây cho mỗi góc nhìn. Thẻ đọc chắc được ghi ngay; thẻ chưa chắc phải thấy giống nhau ở 2 khung hình liên tiếp mới ghi — để chống rung tay và nhòe. Thẻ chưa chắc hiện ở dưới để thầy xác nhận.";
+  sweepTimer = setInterval(sweepTick, 300);
   sweepTick();
 });
 function captureVideoFrame(video){
@@ -2282,35 +2469,34 @@ function processDetections(dets, srcW, srcH, mode){
   var newly = 0, uncertain = 0, holding = 0;
   var now = Date.now();
   dets.forEach(function(d){
-    // Chống rung / nhòe ở chế độ quét trực tiếp: một thẻ phải xuất hiện
-    // giống nhau (cùng số, cùng đáp án) ở 2 khung hình liên tiếp mới tự
-    // ghi. Ảnh tĩnh thì ghi ngay vì đã phân tích kỹ.
     // Chống rung / nhòe ở chế độ quét trực tiếp, theo VỊ TRÍ chứ
     // không theo số thẻ: cùng một vị trí mà khung trước đọc 28,
     // khung sau đọc 8 thì chuỗi của cả hai đều đặt lại — chỉ khi
     // cùng một số + chữ lặp lại liên tiếp ở cùng vị trí mới được
-    // ghi. Bản cũ khóa theo số thẻ nên 28 và 8 có chuỗi riêng và
-    // mã đọc nhầm vẫn đủ 2 khung để tự ghi.
+    // tính là ổn định. Quy tắc 2 khung này chỉ áp cho thẻ đọc
+    // CHƯA chắc; thẻ đã đọc chắc (d.confident) được ghi ngay từ
+    // khung đầu tiên, không chờ khung thứ hai — trước đây khung này
+    // đọc 28, khung sau đọc 8 thì chuỗi đặt lại mãi, không bao giờ
+    // ghi nên thầy thấy "không quét được". Ảnh tĩnh thì ghi ngay
+    // vì đã phân tích kỹ.
     var stable = true;
     if(isLive){
       var posKey = Math.round((d.bbox.x+d.bbox.w/2)/srcW*20) + "-" + Math.round((d.bbox.y+d.bbox.h/2)/srcH*20);
       var rkey = (d.number!=null ? ("n"+d.number) : "?") + "|" + d.letter;
       var h = posHistory[posKey];
-      if(h && h.key===rkey && now-h.lastSeen<1500){ h.streak++; h.lastSeen = now; }
+      if(h && h.key===rkey && now-h.lastSeen<2000){ h.streak++; h.lastSeen = now; }
       else posHistory[posKey] = {key:rkey, streak:1, lastSeen:now};
       stable = posHistory[posKey].streak>=2;
-      if(!stable) holding++;
     }
     if(d.number!=null){
       var stu = students.find(function(s){return s.card===d.number;});
       if(!stu) return;
       if(currentAnswers()[stu.id]) return;
-      if(d.confident && stable){
+      if(d.confident){
+        /* Thẻ đọc chắc thì ghi ngay từ khung đầu tiên, không chờ khung thứ hai. */
         recordAnswer(stu.id, d.letter);
         newly++;
         if(navigator.vibrate) { try{ navigator.vibrate(25); }catch(e){} }
-      } else if(d.confident && !stable){
-        // Đang giữ yên chờ khung thứ hai — chưa ghi, chưa đưa vào chờ xác nhận.
       } else {
         uncertain++;
         if(!isLive || stable) addPending({key:"n"+d.number, number:d.number, letter:d.letter, studentId:stu.id});
@@ -2319,6 +2505,7 @@ function processDetections(dets, srcW, srcH, mode){
     } else if(d.letter){
       uncertain++;
       if(!isLive || stable) addPending({key:"u"+Math.round(d.bbox.x/20)+"-"+Math.round(d.bbox.y/20)+"-"+d.letter, number:null, letter:d.letter, studentId:null});
+      else holding++;
     }
   });
   var got = session ? Object.keys(currentAnswers()).length : 0;
@@ -3059,16 +3246,24 @@ renderResults();
 </script>
 <script>
 "use strict";
-/* ================= Liên kết trình chiếu qua Firebase Realtime Database =================
-   Nguyên tắc: không có kết nối Firebase thật thì không bao giờ báo đã đồng bộ.
-   Cấu hình Firebase chỉ nằm trong bộ nhớ của trang đang mở (không lưu trữ
-   lâu dài), thầy nhập cùng một cấu hình trên cả điện thoại và máy tính.
-   Điện thoại đẩy: danh sách lớp + câu hỏi hiện tại + từng đáp án.
-   Máy tính chỉ nghe và vẽ lại bảng xanh – đỏ, không quét, không ghi. */
+/* ================= Liên kết trình chiếu — đồng bộ MQTT, KHÔNG cần cấu hình =================
+   Thay Firebase bắt buộc bằng MQTT công khai qua WebSocket:
+   - Không tài khoản, không dán cấu hình, không Rules chặn ghi.
+   - Điện thoại bấm "Tạo mã phòng" là có mã 4 ký tự + QR ngay.
+   - Điện thoại publish toàn bộ state + đáp án lên topic quetthe/rooms/<CODE>/...,
+     máy tính subscribe topic đó và vẽ lại bảng xanh – đỏ.
+   - Broker thử lần lượt: broker.emqx.io (wss:8084) rồi test.mosquitto.org (wss:8081).
+     Nếu cả hai đều không tới được (mạng trường chặn), trang báo rõ + dùng Cast/scrcpy.
+   - Phần Firebase cũ vẫn còn nguyên ở cuối file này, chỉ dùng khi thầy mở mục
+     "Nâng cao (tùy chọn)" và tự kết nối — nó KHÔNG còn chặn luồng chính.
+   - QR chứa URL trang hiện tại + ?room=CODE&role=presenter. Mở bằng file:// thì
+     QR vẫn vẽ ra nhưng điện thoại không mở được đường dẫn file:// — lúc đó
+     nhập mã 4 ký tự bằng tay vẫn đồng bộ được qua MQTT (chỉ cần có mạng). */
 var firebaseConfigObj = null;
 var firebaseDb = null;
 var firebaseConnected = false;
 var firebaseSdkPromise = null;
+/* roomRef / presenterRef giữ lại làm biến tương thích (không còn trỏ Firebase). */
 var roomCode = "";
 var roomRef = null;
 var heartbeatTimer = null;
@@ -3082,22 +3277,241 @@ var remoteData = null;
 var staleTimer = null;
 var viewerId = "v" + Math.random().toString(36).slice(2, 10);
 
+/* ---- MQTT state ---- */
+var mqttClient = null;
+var mqttConnected = false;
+var mqttBrokerUrl = "";
+var mqttConnecting = false;
+var mqttConnectPromise = null;
+var mqttSdkPromise = null;
+var mqttRetryTimer = null;
+var mqttLibUrls = [
+  "https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.10.3/mqtt.min.js",
+  "https://cdn.jsdelivr.net/npm/mqtt@5.10.3/dist/mqtt.min.js",
+  "https://unpkg.com/mqtt@5.10.3/dist/mqtt.min.js"
+];
+var mqttBrokers = [
+  "wss://broker.emqx.io:8084/mqtt",
+  "wss://test.mosquitto.org:8081/mqtt",
+  "wss://test.mosquitto.org:8081"
+];
+var qrLibUrls = [
+  "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js",
+  "https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js",
+  "https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js"
+];
+var qrSdkPromise = null;
+var lastSyncAt = 0;
+var viewerIds = {};
+var presenterWaitTimer = null;
+
+function setSyncStatus(text){
+  var n = el("syncStatus"); if(n) n.textContent = text;
+}
+function setSyncBroker(){
+  var n = el("syncBroker"); if(!n) return;
+  n.textContent = mqttConnected
+    ? ("Máy chủ đồng bộ: đã kết nối — " + mqttBrokerUrl)
+    : (mqttBrokerUrl ? ("Máy chủ đồng bộ: đang thử " + mqttBrokerUrl + "…") : "Máy chủ đồng bộ: chưa kết nối.");
+}
+function updateLastSync(){
+  var n = el("lastSyncTime"); if(!n) return;
+  n.textContent = lastSyncAt
+    ? ("Đồng bộ lần cuối: " + new Date(lastSyncAt).toLocaleTimeString("vi-VN") + ".")
+    : "Đồng bộ lần cuối: chưa có.";
+}
 function setFirebaseStatus(text){
-  el("firebaseStatus").textContent = text;
+  var n = el("firebaseStatus"); if(n) n.textContent = text;
 }
 function updateLinkButtons(){
-  var connected = !!(firebaseDb && firebaseConnected);
-  el("createRoomBtn").disabled = !connected || !!roomCode;
+  /* Nút Tạo phòng / Vào xem KHÔNG bao giờ bị khóa vì thiếu Firebase nữa. */
+  el("createRoomBtn").disabled = !!roomCode;
   el("stopRoomBtn").disabled = !roomCode;
-  el("joinRoomBtn").disabled = !connected || isPresenter;
+  el("joinRoomBtn").disabled = isPresenter;
   el("leaveRoomBtn").disabled = !isPresenter;
   el("firebaseDisconnectBtn").disabled = !firebaseDb;
-  if(!firebaseDb){
-    el("teacherLinkStatus").textContent = "Chưa tạo mã phòng. Kết nối Firebase ở bước 1 trước.";
-  } else if(!firebaseConnected){
-    el("teacherLinkStatus").textContent = "Firebase đang mất kết nối — kiểm tra mạng rồi kết nối lại. Chưa đẩy được kết quả lên máy tính.";
+  if(!roomCode && !mqttConnected){
+    el("teacherLinkStatus").textContent = "Chưa tạo mã phòng. Bấm “Tạo mã phòng” ở trên là có mã ngay — không cần nhập cấu hình gì.";
+  } else if(!mqttConnected){
+    el("teacherLinkStatus").textContent = "Mất mạng — đang thử kết nối lại máy chủ đồng bộ. Kết quả vẫn ở trên điện thoại này, máy tính chưa nhận được bản mới.";
   }
 }
+function loadScriptOnce(src){
+  return new Promise(function(resolve, reject){
+    var s = document.createElement("script");
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = function(){ reject(new Error("Không tải được " + src)); };
+    document.head.appendChild(s);
+  });
+}
+function loadFromList(urls, check){
+  if(check()) return Promise.resolve();
+  var chain = Promise.reject(new Error("start"));
+  urls.forEach(function(u){
+    chain = chain.catch(function(){ return loadScriptOnce(u).then(function(){
+      if(!check()) throw new Error("Thư viện tải về nhưng không khởi tạo được: " + u);
+    }); });
+  });
+  return chain;
+}
+function loadMqttSdk(){
+  if(window.mqtt) return Promise.resolve();
+  if(mqttSdkPromise) return mqttSdkPromise;
+  mqttSdkPromise = loadFromList(mqttLibUrls, function(){ return !!window.mqtt; })
+    .catch(function(err){ mqttSdkPromise = null; throw err; });
+  return mqttSdkPromise;
+}
+function loadQrSdk(){
+  if(window.QRCode) return Promise.resolve();
+  if(qrSdkPromise) return qrSdkPromise;
+  qrSdkPromise = loadFromList(qrLibUrls, function(){ return !!window.QRCode; })
+    .catch(function(err){ qrSdkPromise = null; throw err; });
+  return qrSdkPromise;
+}
+function mqttBase(code){ return "quetthe/rooms/" + code; }
+function connectMqtt(){
+  if(mqttClient && mqttConnected) return Promise.resolve(mqttClient);
+  if(mqttConnecting) return mqttConnectPromise;
+  mqttConnecting = true;
+  setSyncStatus("Đang kết nối máy chủ đồng bộ…");
+  setSyncBroker();
+  mqttConnectPromise = loadMqttSdk().then(function(){
+    var tried = [];
+    function tryBroker(i){
+      if(i >= mqttBrokers.length){
+        throw new Error("Không tới được máy chủ đồng bộ (" + tried.join(", ") + "). Kiểm tra mạng / thử 4G, hoặc dùng cách chiếu màn hình điện thoại (Cast / scrcpy) ở cuối phần này.");
+      }
+      var url = mqttBrokers[i];
+      mqttBrokerUrl = url; setSyncBroker();
+      return new Promise(function(resolve, reject){
+        var client;
+        try{
+          client = mqtt.connect(url, {keepalive: 30, reconnectPeriod: 0, connectTimeout: 8000, clientId: "quetthe_" + viewerId + "_" + Math.random().toString(36).slice(2, 8)});
+        }catch(e){ reject(e); return; }
+        var done = false;
+        var timer = setTimeout(function(){
+          if(done) return; done = true;
+          try{ client.end(true); }catch(e){}
+          tried.push(url);
+          tryBroker(i + 1).then(resolve, reject);
+        }, 9000);
+        client.once("connect", function(){
+          if(done) return; done = true; clearTimeout(timer);
+          mqttClient = client; mqttConnected = true;
+          setSyncStatus("Đã kết nối — máy chủ đồng bộ " + url + ".");
+          setSyncBroker();
+          client.on("message", onMqttMessage);
+          client.on("close", onMqttClosed);
+          client.on("offline", onMqttClosed);
+          client.on("error", function(){ /* 'close' sẽ xử lý hiển thị + thử lại */ });
+          if(roomCode) subscribeTeacherTopics();
+          if(isPresenter && presenterCode) subscribePresenterTopics(presenterCode);
+          resolve(client);
+        });
+        client.once("error", function(){
+          if(done) return; done = true; clearTimeout(timer);
+          try{ client.end(true); }catch(e){}
+          tried.push(url);
+          tryBroker(i + 1).then(resolve, reject);
+        });
+      });
+    }
+    return tryBroker(0);
+  }).catch(function(err){
+    mqttConnected = false; mqttClient = null;
+    setSyncStatus("Chưa kết nối được: " + (err && err.message ? err.message : err));
+    setSyncBroker();
+    updateLinkButtons();
+    throw err;
+  }).then(function(c){
+    mqttConnecting = false;
+    return c;
+  }, function(err){
+    mqttConnecting = false;
+    throw err;
+  });
+  return mqttConnectPromise;
+}
+function onMqttClosed(){
+  if(!mqttConnected && !mqttClient) return;
+  mqttConnected = false;
+  setSyncStatus("Mất mạng — đang thử lại máy chủ đồng bộ… Kết quả vẫn ở trên điện thoại này.");
+  setSyncBroker();
+  updateLastSync();
+  updateLinkButtons();
+  if(isPresenter) renderRemoteBoard();
+  if(mqttRetryTimer) clearTimeout(mqttRetryTimer);
+  if(roomCode || isPresenter){
+    mqttRetryTimer = setTimeout(function(){
+      mqttClient = null;
+      connectMqtt().then(function(){
+        setSyncStatus(roomCode
+          ? ("Đã kết nối lại — mã phòng " + roomCode + " — đang chờ máy tính vào xem.")
+          : "Đã kết nối lại máy chủ đồng bộ.");
+        if(roomCode) pushRoomState();
+        updateLinkButtons();
+        if(isPresenter) renderRemoteBoard();
+      }).catch(function(){ /* trạng thái lỗi đã hiện trong connectMqtt */ });
+    }, 4000);
+  }
+}
+function subscribeTeacherTopics(){
+  if(!mqttClient || !mqttConnected) return;
+  try{ mqttClient.subscribe(mqttBase(roomCode) + "/viewers/#"); }catch(e){}
+}
+function subscribePresenterTopics(code){
+  if(!mqttClient || !mqttConnected) return;
+  try{
+    mqttClient.subscribe(mqttBase(code) + "/state");
+    mqttClient.subscribe(mqttBase(code) + "/answers/#");
+    mqttClient.subscribe(mqttBase(code) + "/meta");
+  }catch(e){}
+}
+function onMqttMessage(topic, payload){
+  var text = "";
+  try{ text = payload ? payload.toString() : ""; }catch(e){ return; }
+  if(!text) return;
+  var data = null;
+  try{ data = JSON.parse(text); }catch(e){ data = text; }
+  if(topic.indexOf("/viewers/") !== -1){
+    var vid = topic.split("/").pop();
+    if(data === 1 || data === "1" || data === true) viewerIds[vid] = true;
+    else delete viewerIds[vid];
+    var n = Object.keys(viewerIds).length;
+    var vc = el("viewerCount");
+    if(vc) vc.textContent = n
+      ? ("Đang có " + n + " màn hình trình chiếu đang xem phòng này.")
+      : "Chưa có màn hình trình chiếu nào đang xem — máy tính nhập mã phòng trên là vào xem.";
+    return;
+  }
+  if(!isPresenter) return;
+  if(topic.indexOf("/state") !== -1 && data && typeof data === "object"){
+    remoteData = data;
+    lastSyncAt = Date.now(); updateLastSync();
+    renderRemoteBoard();
+    return;
+  }
+  if(topic.indexOf("/answers/") !== -1){
+    var parts = topic.split("/");
+    var idx = Number(parts[parts.length - 1]);
+    if(!isNaN(idx) && data && typeof data === "object"){
+      if(!remoteData) remoteData = {state: {active: false}, roster: [], answers: {}};
+      if(!remoteData.answers) remoteData.answers = {};
+      remoteData.answers[idx] = data;
+      lastSyncAt = Date.now(); updateLastSync();
+      renderRemoteBoard();
+    }
+    return;
+  }
+  if(topic.indexOf("/meta") !== -1 && data && typeof data === "object"){
+    if(!remoteData) remoteData = {state: {active: false}, roster: [], answers: {}};
+    remoteData.meta = data;
+    lastSyncAt = Date.now(); updateLastSync();
+    renderRemoteBoard();
+  }
+}
+/* ---- Firebase cũ: chỉ dùng khi thầy tự mở mục "Nâng cao (tùy chọn)" ---- */
 function loadFirebaseSdk(){
   if(window.firebase && firebase.database) return Promise.resolve();
   if(firebaseSdkPromise) return firebaseSdkPromise;
@@ -3199,7 +3613,7 @@ function buildRoomPayload(){
   var meta = {
     className: activeClassName() || "",
     teacherOnline: true,
-    lastBeat: (window.firebase && firebase.database) ? firebase.database.ServerValue.TIMESTAMP : Date.now()
+    lastBeat: Date.now()
   };
   var state;
   if(!session || !q){
@@ -3220,35 +3634,43 @@ function buildRoomPayload(){
 }
 function handlePushError(err){
   roomPushFailed = true;
-  var msg;
-  if(err && err.code === "PERMISSION_DENIED"){
-    msg = "Quyền Firebase bị từ chối — kiểm tra Rules của Realtime Database (xem hướng dẫn ở bước 1). Kết quả chưa đẩy lên máy tính; kết quả vẫn ở trên điện thoại này.";
-  } else {
-    msg = "Không đẩy được lên Firebase (" + (err && err.message ? err.message : err) + ") — kết quả vẫn ở trên điện thoại này, máy tính chưa nhận được.";
-  }
+  var msg = "Không đẩy được lên máy chủ đồng bộ (" + (err && err.message ? err.message : err) + ") — kết quả vẫn ở trên điện thoại này, máy tính chưa nhận được.";
   el("teacherLinkStatus").textContent = msg;
-  el("roomStatus").textContent = msg;
+  var rs = el("roomStatus"); if(rs) rs.textContent = msg;
+}
+function mqttPublish(topic, obj, retain){
+  if(!mqttClient || !mqttConnected) return false;
+  try{
+    mqttClient.publish(topic, typeof obj === "string" ? obj : JSON.stringify(obj), {retain: !!retain, qos: 1});
+    return true;
+  }catch(e){ handlePushError(e); return false; }
 }
 function pushRoomState(){
-  if(!roomRef || !firebaseDb) return;
+  if(!roomCode) return;
+  if(!mqttClient || !mqttConnected){
+    var rs = el("roomStatus");
+    if(rs) rs.textContent = "Chưa đẩy được: mất mạng — đang thử lại máy chủ đồng bộ. Kết quả vẫn ở trên điện thoại này.";
+    return;
+  }
   var p = buildRoomPayload();
   roomPushFailed = false;
-  roomRef.update({meta: p.meta, state: p.state, roster: p.roster}).catch(handlePushError);
+  mqttPublish(mqttBase(roomCode) + "/state", p, true);
   if(session){
-    roomRef.child("answers/" + p.answersIndex).set(p.answers).catch(handlePushError);
+    mqttPublish(mqttBase(roomCode) + "/answers/" + p.answersIndex, p.answers, true);
   }
+  mqttPublish(mqttBase(roomCode) + "/meta", p.meta, true);
+  lastSyncAt = Date.now(); updateLastSync();
   el("roomStatus").textContent = session
     ? ("Đã đẩy lên máy tính: câu " + (session.index + 1) + "/" + questions.length + " · " + Object.keys(currentAnswers()).length + "/" + students.length + " đáp án · mã phòng " + roomCode + ".")
     : ("Đã đẩy lên máy tính: chưa bắt đầu buổi chấm — máy tính đang chờ giáo viên quét · mã phòng " + roomCode + ".");
 }
 function pushRoomAnswer(studentId, letter){
-  if(!roomRef || !firebaseDb || !session) return;
-  var ref = roomRef.child("answers/" + session.index + "/" + studentId);
-  var done = letter == null ? ref.remove() : ref.set(letter);
-  if(done && done.catch) done.catch(handlePushError);
-  try{
-    roomRef.child("meta/lastBeat").set(firebase.database.ServerValue.TIMESTAMP);
-  }catch(e){}
+  if(!roomCode || !session) return;
+  if(!mqttClient || !mqttConnected) return;
+  /* Gửi lại toàn bộ đáp án của câu hiện tại để máy tính luôn có bản đầy đủ. */
+  mqttPublish(mqttBase(roomCode) + "/answers/" + session.index, currentAnswers(), true);
+  mqttPublish(mqttBase(roomCode) + "/meta", {className: activeClassName() || "", teacherOnline: true, lastBeat: Date.now()}, true);
+  lastSyncAt = Date.now(); updateLastSync();
 }
 function generateRoomCode(){
   var chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", out = "";
@@ -3260,67 +3682,80 @@ function generateRoomCode(){
   }
   return out;
 }
+function roomJoinUrl(code){
+  var base = String(location.href || "").split("?")[0].split("#")[0];
+  return base + "?room=" + code + "&role=presenter";
+}
+function drawRoomQr(code){
+  var box = el("roomQr"); if(!box) return;
+  var linkEl = el("roomQrLink"); if(linkEl) linkEl.textContent = "Link trong QR: " + roomJoinUrl(code);
+  var noteEl = el("roomQrNote");
+  if(noteEl){
+    noteEl.textContent = (location.protocol === "file:")
+      ? "Lưu ý: đang mở dạng file:// nên điện thoại không mở được link file này — thầy mở file qua http (hoặc mở cùng file này trên máy tính rồi nhập mã 4 ký tự bằng tay) thì vẫn đồng bộ được."
+      : "Mở link này trên máy tính là tự vào phòng, không cần gõ mã.";
+  }
+  box.innerHTML = "";
+  loadQrSdk().then(function(){
+    try{
+      box.innerHTML = "";
+      new QRCode(box, {text: roomJoinUrl(code), width: 180, height: 180, correctLevel: QRCode.CorrectLevel.M});
+    }catch(e){
+      box.textContent = "Không vẽ được mã QR — dùng mã chữ ở trên.";
+    }
+  }).catch(function(){
+    box.textContent = "Không tải được thư viện QR — dùng mã chữ ở trên để nhập tay.";
+  });
+}
 function createRoom(){
-  if(!firebaseDb){
-    setFirebaseStatus("Chưa liên kết được: chưa kết nối Firebase. Kết nối ở bước 1 trước.");
-    return;
-  }
+  if(roomCode) return;
   el("createRoomBtn").disabled = true;
-  el("teacherLinkStatus").textContent = "Đang tạo mã phòng…";
-  function tryCode(attempt){
+  el("teacherLinkStatus").textContent = "Đang kết nối máy chủ đồng bộ…";
+  connectMqtt().then(function(){
     var code = generateRoomCode();
-    var ref = firebaseDb.ref("quetthe/rooms/" + code);
-    ref.child("meta/lastBeat").once("value").then(function(snap){
-      var v = snap.val();
-      if(v && (Date.now() - Number(v) < 10 * 60 * 1000) && attempt < 5){ tryCode(attempt + 1); return; }
-      finalizeRoom(code, ref);
-    }).catch(function(){ finalizeRoom(code, ref); });
-  }
-  function finalizeRoom(code, ref){
-    roomCode = code; roomRef = ref; roomPushFailed = false;
+    roomCode = code; roomRef = null; roomPushFailed = false; viewerIds = {};
     var p = buildRoomPayload();
-    ref.update({meta: p.meta, state: p.state, roster: p.roster}).then(function(){
-      if(session) return ref.child("answers/" + p.answersIndex).set(p.answers);
-      return null;
-    }).then(function(){
-      el("roomCodeText").textContent = code;
-      el("roomCodeBox").style.display = "block";
-      el("teacherLinkStatus").textContent = "Đã liên kết thật qua Firebase — mã phòng " + code + ". Máy tính nhập đúng mã này là xem được. Giữ điện thoại mở app trong suốt buổi quét.";
-      el("roomStatus").textContent = session
-        ? ("Đã đẩy lên máy tính: câu " + (session.index + 1) + " · mã phòng " + code + ".")
-        : ("Phòng đã sẵn sàng — máy tính vào xem sẽ thấy “đang chờ giáo viên quét” cho đến khi thầy bắt đầu buổi chấm · mã phòng " + code + ".");
-      el("viewerCount").textContent = "";
-      heartbeatTimer = setInterval(function(){
-        if(!roomRef) return;
-        try{ roomRef.child("meta").update({teacherOnline: true, lastBeat: firebase.database.ServerValue.TIMESTAMP}); }catch(e){}
-      }, 5000);
-      viewersRef = ref.child("viewers");
-      viewersRef.on("value", function(snap){
-        var n = snap.numChildren ? snap.numChildren() : 0;
-        el("viewerCount").textContent = n ? ("Đang có " + n + " màn hình trình chiếu đang xem phòng này.") : "Chưa có màn hình trình chiếu nào đang xem — máy tính nhập mã phòng trên là vào xem.";
-      });
-      updateLinkButtons();
-      pushRoomState();
-    }).catch(function(err){
-      roomCode = ""; roomRef = null;
-      el("roomCodeBox").style.display = "none";
-      handlePushError(err);
-      el("teacherLinkStatus").textContent = el("teacherLinkStatus").textContent + " Mã phòng chưa tạo xong — thầy sửa Rules rồi bấm “Tạo mã phòng” lại.";
-      updateLinkButtons();
-    });
-  }
-  tryCode(0);
+    mqttPublish(mqttBase(code) + "/state", p, true);
+    if(session) mqttPublish(mqttBase(code) + "/answers/" + p.answersIndex, p.answers, true);
+    mqttPublish(mqttBase(code) + "/meta", p.meta, true);
+    subscribeTeacherTopics();
+    el("roomCodeText").textContent = code;
+    el("roomCodeBox").style.display = "block";
+    drawRoomQr(code);
+    setSyncStatus("Đã kết nối — mã phòng " + code + " — đang chờ máy tính vào xem.");
+    el("teacherLinkStatus").textContent = "Đã kết nối thật — mã phòng " + code + ". Máy tính quét QR hoặc nhập đúng mã này là xem được. Giữ điện thoại mở app trong suốt buổi quét.";
+    el("roomStatus").textContent = session
+      ? ("Đã đẩy lên máy tính: câu " + (session.index + 1) + " · mã phòng " + code + ".")
+      : ("Phòng đã sẵn sàng — máy tính vào xem sẽ thấy “đang chờ giáo viên quét” cho đến khi thầy bắt đầu buổi chấm · mã phòng " + code + ".");
+    el("viewerCount").textContent = "Chưa có màn hình trình chiếu nào đang xem — máy tính nhập mã phòng trên là vào xem.";
+    if(heartbeatTimer) clearInterval(heartbeatTimer);
+    heartbeatTimer = setInterval(function(){
+      if(!roomCode) return;
+      mqttPublish(mqttBase(roomCode) + "/meta", {className: activeClassName() || "", teacherOnline: true, lastBeat: Date.now()}, true);
+    }, 5000);
+    lastSyncAt = Date.now(); updateLastSync();
+    updateLinkButtons();
+    pushRoomState();
+  }).catch(function(err){
+    el("teacherLinkStatus").textContent = "Chưa tạo được mã phòng: " + (err && err.message ? err.message : err);
+    updateLinkButtons();
+  });
 }
 function stopRoom(){
   if(heartbeatTimer){ clearInterval(heartbeatTimer); heartbeatTimer = null; }
-  if(viewersRef){ try{ viewersRef.off(); }catch(e){} viewersRef = null; }
-  if(roomRef && firebaseDb){
-    try{ roomRef.child("meta").update({teacherOnline: false}); }catch(e){}
+  if(roomCode && mqttClient && mqttConnected){
+    try{
+      mqttPublish(mqttBase(roomCode) + "/meta", {className: activeClassName() || "", teacherOnline: false, lastBeat: Date.now()}, true);
+      mqttClient.publish(mqttBase(roomCode) + "/state", "", {retain: true, qos: 1});
+    }catch(e){}
+    try{ mqttClient.unsubscribe(mqttBase(roomCode) + "/viewers/#"); }catch(e){}
   }
-  roomRef = null; roomCode = "";
+  roomRef = null; roomCode = ""; viewerIds = {};
+  var qb = el("roomQr"); if(qb) qb.innerHTML = "";
   el("roomCodeBox").style.display = "none";
   el("viewerCount").textContent = "";
   el("teacherLinkStatus").textContent = "Đã dừng liên kết trình chiếu. Máy tính đang xem sẽ hiện “đang chờ giáo viên quét”. Muốn chiếu lại, bấm “Tạo mã phòng” để lấy mã mới.";
+  setSyncStatus("Đã dừng phòng. Bấm “Tạo mã phòng” để tạo mã mới — không cần nhập cấu hình gì.");
   updateLinkButtons();
 }
 /* ---- Máy tính: màn hình trình chiếu chỉ xem ---- */
@@ -3335,7 +3770,11 @@ function selectLinkRole(role){
 }
 function remoteTileState(picked, st){
   if(!picked) return "empty";
-  if(st.showColors || st.revealed) return picked === LETTERS[st.correct] ? "correct" : "wrong";
+  /* Màn hình máy tính chỉ tô đúng/sai khi giáo viên đã chiếu đáp án
+     (st.revealed). Trường showColors trong payload vẫn giữ cho tương
+     thích, nhưng phía hiển thị không dùng nó để tô màu nữa — nếu không
+     học sinh sẽ biết trước đáp án. */
+  if(st.revealed) return picked === LETTERS[st.correct] ? "correct" : "wrong";
   return "answered";
 }
 function renderRemoteBoard(){
@@ -3348,8 +3787,8 @@ function renderRemoteBoard(){
   var roster = Array.isArray(rosterRaw) ? rosterRaw : (rosterRaw ? Object.keys(rosterRaw).sort(function(a, b){ return Number(a) - Number(b); }).map(function(k){ return rosterRaw[k]; }) : []);
   el("projLinkStatus").textContent = "MÀN HÌNH TRÌNH CHIẾU · Mã phòng " + presenterCode;
   el("projTimer").textContent = "";
-  if(!firebaseConnected){
-    waiting.textContent = "Mất kết nối Firebase trên máy tính này — kiểm tra mạng rồi vào lại phòng. Kết quả đang hiện (nếu có) là của lần nhận gần nhất, không phải kết quả mới.";
+  if(!mqttConnected){
+    waiting.textContent = "Mất kết nối đồng bộ trên máy tính này — kiểm tra mạng rồi vào lại phòng. Kết quả đang hiện (nếu có) là của lần nhận gần nhất, không phải kết quả mới.";
     waiting.classList.add("show");
   } else if(!remoteData || !st || !st.active){
     waiting.textContent = "Đang chờ giáo viên quét — giáo viên chưa bắt đầu buổi quét trong phòng này, hoặc mã phòng chưa đúng. Kiểm tra lại mã phòng trên điện thoại giáo viên; màn hình này sẽ tự hiện kết quả ngay khi giáo viên quét được thẻ đầu tiên.";
@@ -3377,7 +3816,8 @@ function renderRemoteBoard(){
   el("projCounter").textContent = "Câu " + (st.index + 1) + " / " + st.total + " · " + (st.className || "") + " · Mã phòng " + presenterCode;
   el("projQText").innerHTML = renderMathInText(st.questionText || "");
   el("projOpts").innerHTML = (st.options || []).map(function(o, oi){
-    var cls = "proj-opt " + LETTERS[oi] + ((st.showColors || st.revealed) && oi === st.correct ? " reveal-correct" : "");
+    /* Đáp án đúng chỉ tô xanh khi giáo viên đã chiếu đáp án (st.revealed). */
+    var cls = "proj-opt " + LETTERS[oi] + (st.revealed && oi === st.correct ? " reveal-correct" : "");
     return '<div class="' + cls + '"><span class="letter">' + LETTERS[oi] + '</span><span>' + renderMathInText(o) + '</span></div>';
   }).join("");
   var answers = (remoteData.answers && remoteData.answers[st.index]) || {};
@@ -3388,8 +3828,10 @@ function renderRemoteBoard(){
     else if(p === LETTERS[st.correct]) correct++;
     else wrong++;
   });
-  el("projStats").innerHTML = '<span class="ok">✓ Đúng: ' + correct + '</span><span class="bad">✗ Sai: ' + wrong + '</span><span class="wait">Chưa có đáp án: ' + waitingN + ' / ' + roster.length + '</span>' +
-    (st.revealed ? '<span class="ok">Đáp án đúng: ' + LETTERS[st.correct] + '</span>' : '');
+  var gotN = roster.length - waitingN;
+  el("projStats").innerHTML = st.revealed
+    ? '<span class="ok">✓ Đúng: ' + correct + '</span><span class="bad">✗ Sai: ' + wrong + '</span><span class="wait">Chưa có đáp án: ' + waitingN + ' / ' + roster.length + '</span><span class="ok">Đáp án đúng: ' + LETTERS[st.correct] + '</span>'
+    : '<span class="wait">Đã nhận: ' + gotN + ' / ' + roster.length + '</span><span class="wait">Chưa có đáp án: ' + waitingN + ' / ' + roster.length + '</span>';
   el("projGrid").innerHTML = roster.map(function(s){
     var p = answers[s.id] || "";
     return boardTileHtml(s, p, remoteTileState(p, st), false);
@@ -3406,39 +3848,48 @@ function startPresenter(){
     el("roomCodeInput").focus();
     return;
   }
-  if(!firebaseDb || !firebaseConnected){
-    el("presenterStatus").textContent = "Chưa liên kết được: máy tính này chưa kết nối Firebase. Kết nối ở bước 1 trước, rồi nhập lại mã phòng.";
-    return;
-  }
-  stopPresenter(true);
-  isPresenter = true; presenterCode = code; remoteData = null;
-  presenterRef = firebaseDb.ref("quetthe/rooms/" + code);
-  presenterRef.on("value", function(snap){
-    remoteData = snap.val();
+  el("presenterStatus").textContent = "Đang kết nối máy chủ đồng bộ để vào phòng " + code + "…";
+  connectMqtt().then(function(){
+    stopPresenter(true);
+    isPresenter = true; presenterCode = code; remoteData = null;
+    subscribePresenterTopics(code);
+    try{
+      mqttPublish(mqttBase(code) + "/viewers/" + viewerId, 1, true);
+    }catch(e){}
+    el("projectorOverlay").classList.add("open");
+    el("projectorOverlay").classList.add("presenter");
+    el("projBackBtn").textContent = "Rời màn hình trình chiếu";
+    el("presenterStatus").textContent = "Đã vào phòng " + code + " — đang chờ dữ liệu từ điện thoại giáo viên. Màn hình này chỉ xem, không cần camera.";
+    setSyncStatus("Đã kết nối — đang xem phòng " + code + ".");
     renderRemoteBoard();
-  }, function(err){
-    el("presenterStatus").textContent = "Không đọc được phòng " + code + " (" + (err && err.message ? err.message : err) + ") — kiểm tra Rules của Firebase và mã phòng, rồi thử lại.";
-    renderRemoteBoard();
+    if(presenterWaitTimer) clearTimeout(presenterWaitTimer);
+    presenterWaitTimer = setTimeout(function(){
+      if(isPresenter && !remoteData){
+        el("presenterStatus").textContent = "Chưa thấy phòng " + code + " — kiểm tra lại mã, giáo viên đã bấm “Tạo mã phòng” chưa, và cả hai thiết bị có mạng không. Màn hình đang chờ, sẽ tự hiện khi có dữ liệu.";
+      }
+    }, 8000);
+    if(staleTimer) clearInterval(staleTimer);
+    staleTimer = setInterval(function(){ if(isPresenter) renderRemoteBoard(); }, 2000);
+    updateLinkButtons();
+  }).catch(function(err){
+    el("presenterStatus").textContent = "Chưa vào được phòng " + code + ": " + (err && err.message ? err.message : err);
+    updateLinkButtons();
   });
-  try{
-    presenterViewerRef = presenterRef.child("viewers/" + viewerId);
-    presenterViewerRef.set(true);
-    presenterViewerRef.onDisconnect().remove();
-  }catch(e){ presenterViewerRef = null; }
-  el("projectorOverlay").classList.add("open");
-  el("projectorOverlay").classList.add("presenter");
-  el("projBackBtn").textContent = "Rời màn hình trình chiếu";
-  el("presenterStatus").textContent = "Đã vào phòng " + code + " — đang chờ dữ liệu từ điện thoại giáo viên. Màn hình này chỉ xem, không cần camera.";
-  renderRemoteBoard();
-  if(staleTimer) clearInterval(staleTimer);
-  staleTimer = setInterval(function(){ if(isPresenter) renderRemoteBoard(); }, 2000);
-  updateLinkButtons();
 }
 function stopPresenter(silent){
   var was = isPresenter;
   isPresenter = false;
+  if(presenterCode && mqttClient && mqttConnected){
+    try{
+      mqttClient.publish(mqttBase(presenterCode) + "/viewers/" + viewerId, "", {retain: true, qos: 1});
+      mqttClient.unsubscribe(mqttBase(presenterCode) + "/state");
+      mqttClient.unsubscribe(mqttBase(presenterCode) + "/answers/#");
+      mqttClient.unsubscribe(mqttBase(presenterCode) + "/meta");
+    }catch(e){}
+  }
   if(presenterRef){ try{ presenterRef.off(); }catch(e){} presenterRef = null; }
   if(presenterViewerRef){ try{ presenterViewerRef.remove(); presenterViewerRef.onDisconnect().cancel(); }catch(e){} presenterViewerRef = null; }
+  if(presenterWaitTimer){ clearTimeout(presenterWaitTimer); presenterWaitTimer = null; }
   if(staleTimer){ clearInterval(staleTimer); staleTimer = null; }
   remoteData = null; presenterCode = "";
   el("projectorOverlay").classList.remove("open");
@@ -3449,6 +3900,33 @@ function stopPresenter(silent){
     el("presenterStatus").textContent = "Đã rời màn hình trình chiếu. Muốn xem lại, nhập mã phòng và bấm “Vào xem trình chiếu”.";
   }
   updateLinkButtons();
+}
+function testSyncConnection(){
+  var msgEl = el("syncTestMsg");
+  if(msgEl) msgEl.textContent = "Đang gửi 1 tin thử qua máy chủ đồng bộ…";
+  connectMqtt().then(function(){
+    var id = "t" + Math.random().toString(36).slice(2, 10);
+    var topic = "quetthe/sync-test/" + id;
+    var got = false;
+    function onTest(t, p){
+      if(t === topic){ got = true; }
+    }
+    mqttClient.on("message", onTest);
+    try{ mqttClient.subscribe(topic); }catch(e){}
+    try{ mqttClient.publish(topic, "ping-" + id, {qos: 1}); }catch(e){}
+    setTimeout(function(){
+      try{ mqttClient.removeListener("message", onTest); }catch(e){}
+      try{ mqttClient.unsubscribe(topic); }catch(e){}
+      if(got){
+        lastSyncAt = Date.now(); updateLastSync();
+        if(msgEl) msgEl.textContent = "Đã nhận được tin thử — kết nối đồng bộ hoạt động (" + mqttBrokerUrl + "). Thầy tạo mã phòng và cho máy tính vào xem được rồi.";
+      } else {
+        if(msgEl) msgEl.textContent = "Không nhận được tin thử trong 5 giây — kiểm tra mạng / thử 4G rồi bấm lại. Nếu vẫn không được, dùng cách chiếu màn hình điện thoại (Cast / scrcpy) ở cuối phần này.";
+      }
+    }, 5000);
+  }).catch(function(err){
+    if(msgEl) msgEl.textContent = "Chưa kết nối được: " + (err && err.message ? err.message : err);
+  });
 }
 el("firebaseConnectBtn").addEventListener("click", connectFirebase);
 el("firebaseDisconnectBtn").addEventListener("click", disconnectFirebase);
@@ -3475,6 +3953,7 @@ el("createRoomBtn").addEventListener("click", createRoom);
 el("stopRoomBtn").addEventListener("click", stopRoom);
 el("joinRoomBtn").addEventListener("click", startPresenter);
 el("leaveRoomBtn").addEventListener("click", function(){ stopPresenter(false); });
+el("syncTestBtn").addEventListener("click", testSyncConnection);
 el("roomCodeInput").addEventListener("input", function(){
   el("roomCodeInput").value = el("roomCodeInput").value.toUpperCase().replace(/[^A-Z0-9]/g, "");
 });
@@ -3492,6 +3971,19 @@ el("gotoPresentBtn").addEventListener("click", function(){
 document.addEventListener("keydown", function(e){
   if(e.key === "Escape" && isPresenter) stopPresenter(false);
 });
+/* Mở link ?room=CODE&role=presenter thì tự vào vai presenter và tự join phòng đó. */
+(function autoJoinFromUrl(){
+  try{
+    var q = new URLSearchParams(location.search || "");
+    var code = String(q.get("room") || "").trim().toUpperCase();
+    var role = String(q.get("role") || "").trim().toLowerCase();
+    if(/^[A-Z0-9]{4}$/.test(code) && role === "presenter"){
+      selectLinkRole("presenter");
+      el("roomCodeInput").value = code;
+      setTimeout(function(){ startPresenter(); }, 600);
+    }
+  }catch(e){}
+})();
 updateLinkButtons();
 </script>
 </body>
