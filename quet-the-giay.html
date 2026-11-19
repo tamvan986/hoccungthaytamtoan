@@ -353,7 +353,33 @@ canvas#shot{display:none}
           <button class="btn secondary" id="clearClassBtn" type="button">Xóa hết học sinh lớp đang chọn</button>
         </div>
         <p class="hint" id="bulkMsg"></p>
-        <p class="hint">Danh sách các lớp chỉ nằm trong phiên mở trang này. Đóng trang là hết — thầy nên in thẻ ngay sau khi chốt danh sách. Đổi lớp trong lúc đang chấm sẽ dừng buổi chấm đang mở, vì mỗi buổi chấm chỉ chấm một lớp.</p>
+        <p class="hint">3 lớp gốc luôn có sẵn. Lớp thầy tự thêm hoặc nhập từ file được lưu trên trình duyệt này, đóng trang mở lại vẫn còn; xóa bộ nhớ trình duyệt thì mất. Đổi lớp trong lúc đang chấm sẽ dừng buổi chấm đang mở, vì mỗi buổi chấm chỉ chấm một lớp.</p>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Nhập danh sách lớp từ file — thêm lớp khác</h2>
+      <p class="lead">Muốn thêm lớp khác thì chỉ cần nạp file danh sách của lớp đó, không phải gõ từng tên. Nhận file Excel (.xlsx/.xls), CSV và TXT; mỗi học sinh một dòng, có cột Họ tên và cột Ngày sinh (ngày sinh có thể để trống); dòng đầu có thể là tiêu đề; cột STT nếu có sẽ bị bỏ qua.</p>
+      <div class="grid2" style="margin-top:10px">
+        <div>
+          <label for="importClassName">Tên lớp sẽ nhập</label>
+          <input type="text" id="importClassName" placeholder="Ví dụ: 12A8" />
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <div class="btnrow" style="margin-top:0">
+            <button class="btn" id="pickRosterBtn" type="button">Chọn file danh sách lớp</button>
+            <button class="btn secondary" id="rosterTemplateBtn" type="button">Tải file mẫu (.csv)</button>
+          </div>
+        </div>
+      </div>
+      <input type="file" id="rosterInput" accept=".xlsx,.xls,.csv,.txt" hidden />
+      <p class="hint" style="margin-top:8px">File Excel cần mạng để tải thư viện đọc file; file CSV/TXT đọc được ngay cả khi không có mạng.</p>
+      <div id="rosterMsg"></div>
+      <div id="rosterPreview"></div>
+      <div class="btnrow" id="rosterActions" style="display:none">
+        <button class="btn" id="applyRosterNewBtn" type="button">Tạo lớp mới từ file này</button>
+        <button class="btn secondary" id="applyRosterAppendBtn" type="button">Thêm vào lớp đang chọn</button>
+        <button class="btn secondary" id="cancelRosterBtn" type="button">Bỏ file vừa nạp</button>
       </div>
     </div>
     <div class="card">
@@ -942,6 +968,7 @@ PRELOADED_CLASSES.forEach(function(pc){
   });
   classes.push({name: pc.name, students: list, nextCardNo: list.length+1, printedCardIds: {}});
 });
+restoreUserClasses(); // lớp thầy tự thêm/nhập từ file, đã lưu trên trình duyệt này thì nạp lại sau 3 lớp gốc
 loadActiveClass();
 var session = null;  // {index, answers: {qid: {studentId: letter}}, revealed, timerId, timeLeft, running, totalTime}
 var stream = null;
@@ -977,6 +1004,7 @@ function cardGaps(){
 /* ================= Class ================= */
 function renderRoster(){
   syncActiveClass();
+  saveUserClasses(); // ghi lại các lớp do thầy tự thêm/nhập để đóng trang mở lại vẫn còn
   renderClassSwitch();
   var box = el("roster");
   el("rosterTitle").textContent = "Học sinh trong lớp (" + students.length + ")";
@@ -1202,6 +1230,277 @@ el("className").addEventListener("input", function(){
   if(c) c.name = el("className").value;
   renderClassSwitch();
   updateChips(); renderCards();
+  saveUserClasses();
+});
+
+/* ================= Nhập danh sách lớp từ file (.xlsx/.xls/.csv/.txt) =================
+   Nạp xong hiện bảng xem trước rồi thầy mới bấm áp dụng — theo đúng kiểu
+   nạp đề Word. Số thẻ cấp theo đúng quy tắc cố định: bạn mới nhận số tiếp
+   theo chưa từng dùng, không dồn số đã xóa. Lớp do thầy nhập hoặc tự tạo
+   được lưu trên trình duyệt này (localStorage); 3 lớp gốc không lưu. */
+var USER_CLASSES_KEY = "quetthe_user_classes_v1";
+var pendingRoster = null; // {rows:[{name,dob}], skipped, dupNames:[], fileName}
+var xlsxSdkPromise = null;
+var xlsxLibUrls = [
+  "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js",
+  "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js",
+  "https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"
+];
+function loadXlsxSdk(){
+  if(window.XLSX) return Promise.resolve();
+  if(xlsxSdkPromise) return xlsxSdkPromise;
+  xlsxSdkPromise = loadFromList(xlsxLibUrls, function(){ return !!window.XLSX; })
+    .catch(function(err){ xlsxSdkPromise = null; throw err; });
+  return xlsxSdkPromise;
+}
+function isUserClass(c){
+  return !PRELOADED_CLASSES.some(function(pc){ return pc.name===c.name; });
+}
+function saveUserClasses(){
+  try{
+    var data = classes.filter(isUserClass).map(function(c){
+      return {name: c.name, students: c.students.slice().sort(function(a,b){ return a.card-b.card; }).map(function(s){
+        return {name: s.name, dob: s.dob||"", card: s.card};
+      })};
+    });
+    localStorage.setItem(USER_CLASSES_KEY, JSON.stringify(data));
+  }catch(e){}
+}
+function restoreUserClasses(){
+  var raw = null;
+  try{ raw = localStorage.getItem(USER_CLASSES_KEY); }catch(e){ return; }
+  if(!raw) return;
+  var data = null;
+  try{ data = JSON.parse(raw); }catch(e){ return; }
+  if(!Array.isArray(data)) return;
+  data.forEach(function(c){
+    if(!c || !c.name || !Array.isArray(c.students)) return;
+    if(classes.some(function(x){ return x.name===c.name; })) return; // trùng lớp gốc hoặc trùng nhau thì bỏ
+    var list = c.students.map(function(s){
+      return {id: nextStudentId++, name: String(s.name||"").trim(), dob: s.dob||"", card: +s.card||0};
+    }).filter(function(s){ return s.name && s.card>0; });
+    if(!list.length) return;
+    var maxCard = Math.max.apply(null, list.map(function(s){ return s.card; }));
+    classes.push({name: c.name, students: list, nextCardNo: maxCard+1, printedCardIds: {}});
+  });
+}
+function pad2(n){ n = +n; return (n<10?"0":"") + n; }
+function stripDiacritics(s){
+  return String(s==null?"":s).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+}
+function normDob(v){
+  if(v==null || v==="") return "";
+  if(typeof v==="number" && isFinite(v)){
+    if(typeof window!=="undefined" && window.XLSX && XLSX.SSF && XLSX.SSF.format){
+      try{ return XLSX.SSF.format("dd/mm/yyyy", v); }catch(e){}
+    }
+    var d = new Date(Math.round((v-25569)*86400*1000)); // Excel serial: ngày 1 = 01/01/1900
+    if(isNaN(d.getTime())) return "";
+    return pad2(d.getUTCDate()) + "/" + pad2(d.getUTCMonth()+1) + "/" + d.getUTCFullYear();
+  }
+  var s = String(v).trim();
+  var m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+  if(m){
+    var y = +m[3]; if(y<100) y += 2000;
+    return pad2(+m[1]) + "/" + pad2(+m[2]) + "/" + y;
+  }
+  return s;
+}
+function splitCsvLine(line, sep){
+  var out = [], cur = "", inQ = false;
+  for(var i=0;i<line.length;i++){
+    var ch = line[i];
+    if(inQ){
+      if(ch==='"'){
+        if(line[i+1]==='"'){ cur += '"'; i++; }
+        else inQ = false;
+      } else cur += ch;
+    } else if(ch==='"'){ inQ = true; }
+    else if(ch===sep){ out.push(cur.trim()); cur = ""; }
+    else cur += ch;
+  }
+  out.push(cur.trim());
+  return out;
+}
+function parseCsvText(text){
+  var lines = String(text||"").replace(/^\uFEFF/,"").split(/\r?\n/);
+  var sep = ",";
+  for(var i=0;i<lines.length;i++){
+    if(!lines[i].trim()) continue;
+    var cComma = (lines[i].match(/,/g)||[]).length;
+    var cSemi = (lines[i].match(/;/g)||[]).length;
+    var cTab = (lines[i].match(/\t/g)||[]).length;
+    if(cSemi>cComma && cSemi>=cTab) sep = ";";
+    else if(cTab>cComma && cTab>cSemi) sep = "\t";
+    break;
+  }
+  var rows = [];
+  lines.forEach(function(line){
+    if(line.trim()) rows.push(splitCsvLine(line, sep));
+  });
+  return rows;
+}
+function rowsToRoster(rawRows){
+  var rows = (rawRows||[]).filter(function(r){
+    return r && r.some(function(c){ return String(c==null?"":c).trim()!==""; });
+  });
+  if(!rows.length) return {rows:[], skipped:0};
+  var first = rows[0].map(function(c){ return stripDiacritics(c); });
+  var nameCol = -1, dobCol = -1, hasHeader = false;
+  first.forEach(function(h, i){
+    if(nameCol<0 && /(^| )(ho ten|ho va ten|ten hoc sinh|ten)( |$)/.test(h)){ nameCol = i; hasHeader = true; }
+    else if(dobCol<0 && /(^| )(ngay sinh|ngay thang nam sinh|dob|ns)( |$)/.test(h)){ dobCol = i; hasHeader = true; }
+  });
+  if(!hasHeader && first.some(function(h){ return h==="stt" || /(^| )so thu tu( |$)/.test(h); })) hasHeader = true;
+  if(nameCol<0) nameCol = 0;
+  if(dobCol<0) dobCol = (rows[0].length>1 ? 1 : -1);
+  if(dobCol===nameCol) dobCol = -1;
+  var start = hasHeader ? 1 : 0;
+  var out = [], skipped = 0;
+  for(var r=start;r<rows.length;r++){
+    var row = rows[r];
+    var name = String(row[nameCol]==null?"":row[nameCol]).trim();
+    if(!hasHeader) name = name.replace(/^\s*\d+[\.\)]\s*/,"").trim();
+    if(!name){ skipped++; continue; }
+    var dob = dobCol>=0 ? normDob(row[dobCol]) : "";
+    out.push({name:name, dob:dob});
+  }
+  return {rows:out, skipped:skipped};
+}
+function handleRosterRows(rawRows, fileName){
+  var res = rowsToRoster(rawRows);
+  if(!res.rows.length){
+    el("rosterMsg").innerHTML = '<div class="errbox">Không đọc được học sinh nào trong file “'+esc(fileName)+'”. Kiểm tra lại: mỗi dòng một học sinh, có cột Họ tên (và cột Ngày sinh nếu có).</div>';
+    pendingRoster = null; renderRosterPreview();
+    return;
+  }
+  var byName = {};
+  res.rows.forEach(function(r){ (byName[r.name]=byName[r.name]||[]).push(r); });
+  var dupNames = Object.keys(byName).filter(function(n){ return byName[n].length>1; });
+  pendingRoster = {rows: res.rows, skipped: res.skipped, dupNames: dupNames, fileName: fileName};
+  el("rosterMsg").innerHTML = '<div class="okbox">Đã đọc file “'+esc(fileName)+'”: '+res.rows.length+' học sinh. Kiểm tra bảng xem trước bên dưới rồi bấm áp dụng.</div>';
+  renderRosterPreview();
+}
+function renderRosterPreview(){
+  var box = el("rosterPreview");
+  var actions = el("rosterActions");
+  if(!pendingRoster){ box.innerHTML=""; actions.style.display="none"; return; }
+  var r = pendingRoster;
+  var html = '<h3 style="margin-top:16px">Xem trước: đọc được ' + r.rows.length + ' học sinh' +
+    (r.skipped ? ' · bỏ qua ' + r.skipped + ' dòng trống/không có tên' : '') + '</h3>';
+  if(r.rows.length>63){
+    html += '<div class="warnbox" style="margin-top:10px">Lớp này có ' + r.rows.length + ' bạn (trên 63): thẻ từ số 64 trở đi không có dãy mã số, quét xong thầy gán tay.</div>';
+  }
+  if(r.dupNames.length){
+    html += '<div class="warnbox" style="margin-top:10px">Trong file có bạn trùng tên: ' + r.dupNames.map(function(n){
+      var ds = r.rows.filter(function(x){ return x.name===n; }).map(function(x){ return x.dob||"không rõ ngày sinh"; }).join(", ");
+      return esc(n) + " (" + esc(ds) + ")";
+    }).join("; ") + '. Vẫn nhập được — thầy đối chiếu ngày sinh khi phát thẻ.</div>';
+  }
+  var shown = r.rows.slice(0, 50);
+  html += '<table style="margin-top:10px"><thead><tr><th>STT</th><th>Họ tên</th><th>Ngày sinh</th><th>Số thẻ sẽ cấp</th></tr></thead><tbody>' +
+    shown.map(function(x, i){
+      return '<tr><td>' + (i+1) + '</td><td>' + esc(x.name) + '</td><td>' + esc(x.dob||"—") + '</td><td>' + (i+1) + '</td></tr>';
+    }).join("") + '</tbody></table>';
+  if(r.rows.length>50) html += '<p class="hint">Chỉ hiện 50 bạn đầu — còn ' + (r.rows.length-50) + ' bạn nữa vẫn được nhập đủ khi thầy bấm áp dụng.</p>';
+  html += '<p class="hint">Số thẻ trong bảng là số sẽ cấp khi tạo lớp mới (từ số 1). Nếu bấm “Thêm vào lớp đang chọn”, số thẻ sẽ tiếp tục từ số ' + nextCardNo + ' của lớp ' + esc(activeClassName()) + '.</p>';
+  box.innerHTML = html;
+  actions.style.display = "flex";
+}
+function clearRosterImport(){
+  pendingRoster = null;
+  el("rosterPreview").innerHTML = "";
+  el("rosterMsg").innerHTML = "";
+  el("rosterActions").style.display = "none";
+  el("rosterInput").value = "";
+}
+function uniqueClassName(base){
+  var name = base, n = 2;
+  while(classes.some(function(c){ return c.name===name; })) name = base + " (" + (n++) + ")";
+  return name;
+}
+el("pickRosterBtn").addEventListener("click", function(){ el("rosterInput").click(); });
+el("rosterInput").addEventListener("change", function(){
+  var f = el("rosterInput").files && el("rosterInput").files[0];
+  if(!f) return;
+  var base = f.name.replace(/\.[^.]+$/,"").trim();
+  if(!el("importClassName").value.trim()){
+    el("importClassName").value = /^lớp/i.test(base) ? base : "Lớp " + base;
+  }
+  el("rosterMsg").innerHTML = '<p class="hint">Đang đọc file “'+esc(f.name)+'”…</p>';
+  el("rosterPreview").innerHTML = "";
+  el("rosterActions").style.display = "none";
+  pendingRoster = null;
+  var ext = (f.name.split(".").pop()||"").toLowerCase();
+  if(ext==="xlsx" || ext==="xls"){
+    loadXlsxSdk().then(function(){
+      var reader = new FileReader();
+      reader.onload = function(){
+        try{
+          var wb = XLSX.read(reader.result, {type:"array"});
+          var ws = wb.Sheets[wb.SheetNames[0]];
+          var rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:""});
+          handleRosterRows(rows, f.name);
+        }catch(err){
+          el("rosterMsg").innerHTML = '<div class="errbox">Không đọc được file Excel này: '+esc(err.message||err)+'.</div>';
+        }
+      };
+      reader.onerror = function(){ el("rosterMsg").innerHTML = '<div class="errbox">Không đọc được file. Thầy thử chọn lại file.</div>'; };
+      reader.readAsArrayBuffer(f);
+    }).catch(function(){
+      el("rosterMsg").innerHTML = '<div class="errbox">Cần mạng để đọc file Excel (chưa tải được thư viện SheetJS). Thầy dùng file CSV/TXT thì không cần mạng, hoặc kiểm tra mạng rồi nạp lại file Excel.</div>';
+    });
+  } else {
+    var reader2 = new FileReader();
+    reader2.onload = function(){
+      try{ handleRosterRows(parseCsvText(reader2.result), f.name); }
+      catch(err){ el("rosterMsg").innerHTML = '<div class="errbox">Không đọc được file này: '+esc(err.message||err)+'.</div>'; }
+    };
+    reader2.onerror = function(){ el("rosterMsg").innerHTML = '<div class="errbox">Không đọc được file. Thầy thử chọn lại file.</div>'; };
+    reader2.readAsText(f);
+  }
+  el("rosterInput").value = "";
+});
+el("rosterTemplateBtn").addEventListener("click", function(){
+  var csv = "STT,Họ tên,Ngày sinh\n1,Nguyễn Văn An,11/10/2009\n2,Trần Thị Bình,13/03/2009\n3,Lê Minh Châu,\n";
+  var blob = new Blob(["\uFEFF"+csv], {type:"text/csv;charset=utf-8"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "mau-danh-sach-lop.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+});
+el("cancelRosterBtn").addEventListener("click", function(){ clearRosterImport(); });
+el("applyRosterNewBtn").addEventListener("click", function(){
+  if(!pendingRoster) return;
+  syncActiveClass();
+  var name = uniqueClassName(el("importClassName").value.trim() || "Lớp mới");
+  var list = pendingRoster.rows.map(function(r, i){
+    return {id: nextStudentId++, name: r.name, dob: r.dob, card: i+1};
+  });
+  classes.push({name: name, students: list, nextCardNo: list.length+1, printedCardIds: {}});
+  var n = list.length;
+  clearRosterImport();
+  switchClass(classes.length-1);
+  el("rosterMsg").innerHTML = '<div class="okbox">Đã nhập ' + n + ' học sinh vào lớp ' + esc(name) + ' — sang phần In thẻ để in bộ thẻ mới.</div>';
+  renderCards(); updateChips();
+});
+el("applyRosterAppendBtn").addEventListener("click", function(){
+  if(!pendingRoster) return;
+  syncActiveClass();
+  var skippedDup = 0;
+  pendingRoster.rows.forEach(function(r){
+    var dup = students.some(function(s){ return s.name===r.name && (s.dob||"")===(r.dob||""); });
+    if(dup){ skippedDup++; return; }
+    students.push({id: nextStudentId++, name: r.name, dob: r.dob, card: nextFixedCard()});
+  });
+  var n = pendingRoster.rows.length - skippedDup;
+  var clsName = activeClassName();
+  clearRosterImport();
+  renderRoster(); renderCards(); updateChips();
+  el("rosterMsg").innerHTML = '<div class="okbox">Đã thêm ' + n + ' học sinh vào lớp ' + esc(clsName) +
+    (skippedDup ? ' (bỏ qua ' + skippedDup + ' bạn đã có sẵn trong lớp, trùng cả tên lẫn ngày sinh)' : '') +
+    ' — sang phần In thẻ để in bộ thẻ mới.</div>';
 });
 
 /* ================= Bank rendering ================= */
