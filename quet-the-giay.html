@@ -103,7 +103,13 @@ button.cardnum{cursor:pointer}
 .cards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px}
 .cards-grid.compact{grid-template-columns:repeat(3,1fr)}
 .cards-grid.huge{grid-template-columns:1fr;max-width:620px;margin-left:auto;margin-right:auto}
+.cards-grid.xlarge{grid-template-columns:1fr;max-width:760px;margin-left:auto;margin-right:auto}
 @media print{.cards-grid.huge{max-width:none}}
+@media print{.cards-grid.xlarge{max-width:none}}
+.rowbtns{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.rowbtn{border:2px solid var(--line);background:var(--surface2);border-radius:12px;padding:10px 12px;font-weight:800;font-size:14px;text-align:left}
+.rowbtn.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.rowbtn.done{border-color:var(--green)}
 .zoomrow{display:none;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
 .zoomrow.show{display:flex}
 .zoomrow .zbtn{border:1.5px solid var(--line);background:var(--surface2);border-radius:9px;padding:8px 13px;font-weight:800;font-size:13px}
@@ -289,6 +295,7 @@ canvas#shot{display:none}
   .print-class-block{page-break-before:always}
   .print-class-block:first-child{page-break-before:auto}
   .cards-grid.huge .paper-card{width:132mm;justify-self:center}
+  .cards-grid.xlarge .paper-card{width:180mm;justify-self:center}
   .paper-card{border-radius:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .paper-card .orient{background:#111 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .paper-card .codestrip i.on{background:#111 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -442,6 +449,7 @@ canvas#shot{display:none}
         <div>
           <label for="cardSize">Cỡ thẻ khi in</label>
           <select id="cardSize">
+            <option value="xlarge">Cực lớn — 1 thẻ / trang A4 (cho học sinh ngồi hàng cuối, nhận nhạy nhất ở xa)</option>
             <option value="huge" selected>Rất lớn — 2 thẻ / trang A4 (nhận nhạy nhất)</option>
             <option value="large">Lớn — 4 thẻ / trang A4</option>
             <option value="compact">Vừa — 6 thẻ / trang A4</option>
@@ -454,6 +462,7 @@ canvas#shot{display:none}
         <button class="btn" id="printNewAllBtn" type="button">Chỉ in thẻ mới chưa in — cả các lớp</button>
         <button class="btn secondary" id="resetPrintedBtn" type="button">Đánh dấu tất cả là chưa in</button>
       </div>
+      <p class="hint">Học sinh hàng cuối nên in thẻ cỡ cực lớn (1 thẻ/trang A4); học sinh hàng đầu dùng cỡ rất lớn (2 thẻ/trang) là đủ. Cùng một bạn có thể in lại thẻ cỡ lớn hơn mà không đổi số thẻ.</p>
       <p class="hint" id="printedStatus"></p>
       <p class="hint" id="allPrintedStatus"></p>
       <p class="hint">Bấm “Xem riêng trang in” để chỉ còn bộ thẻ, rồi dùng lệnh In / “Chia sẻ → In” của trình duyệt để in hoặc lưu PDF — hoặc bấm “Xuất file in (.html)” để tải file thẻ riêng, mang ra tiệm in hoặc mở trên máy khác rồi in. Thẻ nào đã mở trang in trong phiên này được tính là “đã in” — khi có bạn mới, nút “Chỉ in thẻ mới chưa in” chỉ in riêng thẻ của bạn đó. Nếu thầy mở xem mà chưa in thật, bấm “Đánh dấu tất cả là chưa in” để in lại.</p>
@@ -469,7 +478,7 @@ canvas#shot{display:none}
   <section class="panel" id="sec-scan">
     <div class="card">
       <h2>Buổi chấm trực tiếp</h2>
-      <p class="lead">Chọn câu hỏi, chiếu lên màn hình cho cả lớp, học sinh giơ thẻ. Thầy quét cả lớp trong một khung hình bằng camera, hoặc chấm nhanh cả lớp bằng bảng bấm bên dưới — hai cách ghi vào cùng một bảng đáp án.</p>
+      <p class="lead">Chọn câu hỏi, chiếu lên màn hình cho cả lớp, học sinh giơ thẻ. Thầy đứng trên bục giảng nên quét theo từng hàng bằng camera — hàng cuối cách 8–10m không quét chung một khung với hàng đầu được — hoặc chấm nhanh cả lớp bằng bảng bấm bên dưới; hai cách ghi vào cùng một bảng đáp án.</p>
       <div class="grid2" style="margin-top:12px">
         <div>
           <label for="timePerQ">Thời gian mỗi câu</label>
@@ -625,24 +634,48 @@ canvas#shot{display:none}
 
     <div class="grid2">
       <div class="card">
-        <h3>Quét cả lớp trong một khung hình</h3>
-        <p class="lead">Không cần chọn từng học sinh, không chụp từng thẻ. Thầy giơ điện thoại lên, đưa cả lớp vào một khung hình, máy tự nhận nhiều thẻ cùng lúc — đọc ô đen ở góc để biết đáp án và đọc dãy mã số để biết thẻ của em nào — rồi tự ghi đáp án, quét liên tục cho đến khi đủ lớp. Học sinh giơ thẻ thẳng, không nghiêng chéo, mặt số hướng về phía thầy, thẻ không bị che và không chồng lên nhau. Nếu lớp đông, thầy quét theo từng hàng: quét xong hàng trước thì lia máy sang hàng sau, số thẻ đã nhận được giữ nguyên. Thẻ nào máy đọc chưa chắc sẽ hiện ở dưới để thầy bấm xác nhận một lần, không phải chụp lại.</p>
-        <p class="lead"><b>Thẻ ở xa, ánh sáng không đều, tay rung?</b> Dùng <b>Ảnh tĩnh nét cao</b> bên dưới: máy chụp một ảnh độ phân giải cao rồi phân tích kỹ từng vùng, nhạy hơn hẳn quét video trực tiếp. Khung xanh/vàng vẽ ngay trên hình cho biết thẻ nào máy đã thấy — thẻ còn nhỏ hoặc chưa thấy thì thầy tiến lại gần, phóng to, hoặc giữ yên thêm 2–3 giây.</p>
+        <h3>Quét cả lớp — không cần theo hàng</h3>
+        <p class="lead">Học sinh ngồi lung tung, số thẻ không khớp với chỗ ngồi, nên chia lớp theo số thẻ để quét từng hàng sẽ không đúng thực tế. Chế độ này quét cả lớp trong một khung hình: máy đọc tất cả thẻ thấy được trong khung — đọc ô đen ở góc để biết đáp án và đọc dãy mã số để biết thẻ của em nào — rồi tự ghi đáp án, không cần biết em đó ngồi hàng nào. Học sinh giơ thẻ thẳng, không nghiêng chéo, mặt số hướng về phía thầy, thẻ không bị che và không chồng lên nhau. Số thẻ đã nhận được giữ nguyên khi thầy chụp thêm ảnh khác. Thẻ nào máy đọc chưa chắc sẽ hiện ở dưới để thầy bấm xác nhận một lần, không phải chụp lại.</p>
+        <p class="lead"><b>Thẻ ở xa, ánh sáng không đều, tay rung?</b> Bấm <b>“Quét cả lớp — chụp ảnh toàn cảnh”</b> bên dưới: máy chụp một ảnh ở độ phân giải gốc của camera rồi phân tích kỹ 6 vùng chồng lấn trong ảnh, nhạy hơn hẳn quét video trực tiếp. Khung xanh/vàng vẽ ngay trên hình cho biết thẻ nào máy đã thấy — thẻ còn nhỏ hoặc chưa thấy thì chụp thêm một ảnh ở gần hơn, hoặc giữ yên thêm 2–3 giây.</p>
+        <p class="hint"><b>Quy trình quét lớp thật:</b> (1) in thẻ cỡ cực lớn cho học sinh ngồi xa, cỡ rất lớn cho học sinh ngồi gần; (2) bấm “Bắt đầu buổi chấm”; (3) bấm “Quét cả lớp — chụp ảnh toàn cảnh” ở 1×, giữ yên 2–3 giây; còn thiếu thì chụp thêm 1–2 ảnh ở giữa lớp / cuối lớp, máy cộng dồn kết quả, thẻ đã nhận không cần quét lại; (4) thẻ nào còn thiếu thì ghi tay nhanh ở bảng dưới. Lớp nào ngồi đúng theo hàng thì thầy vẫn có thể chuyển sang chế độ “Theo hàng” ở dưới.</p>
         <div class="btnrow">
           <button class="btn" id="camOnBtn" type="button">Mở camera sau</button>
           <button class="btn secondary" id="camOffBtn" type="button" disabled>Tắt camera</button>
           <button class="btn secondary" id="camCheckBtn" type="button">Kiểm tra camera</button>
         </div>
         <div class="zoomrow" id="zoomRow">
-          <span style="font-weight:700;font-size:13px">Phóng to cho thẻ ở xa:</span>
+          <span style="font-weight:700;font-size:13px">Phóng to cho thẻ ở xa (hàng cuối dùng 2–3×):</span>
           <button class="zbtn on" type="button" data-zoom="1">1×</button>
           <button class="zbtn" type="button" data-zoom="1.5">1,5×</button>
           <button class="zbtn" type="button" data-zoom="2">2×</button>
+          <button class="zbtn" type="button" data-zoom="3">3×</button>
           <span class="hint">Đưa hàng cần quét vào giữa khung khi phóng to.</span>
+        </div>
+        <div class="btnrow" id="scanModeBtns" role="group" aria-label="Chế độ quét">
+          <span style="font-weight:700;font-size:13px">Chế độ quét:</span>
+          <button class="zbtn on" type="button" data-scanmode="whole">Cả lớp — ngồi lung tung</button>
+          <button class="zbtn" type="button" data-scanmode="rows">Theo hàng — ngồi theo hàng</button>
+        </div>
+        <div id="rowBlock" style="display:none;border:2px solid var(--teal);border-radius:14px;padding:13px;margin-top:14px;background:var(--surface2)">
+          <h4 style="margin:0 0 4px">Quét theo hàng — từ bục giảng</h4>
+          <p class="hint" style="margin:0 0 8px">Thầy đứng trên bục, học sinh cuối lớp cách 8–10m nên không quét được cả lớp trong một khung. Lớp được chia theo số thẻ cố định: hàng 1 là các số thẻ đầu, hàng cuối là các số thẻ cuối. Bấm một hàng để quét hàng đó — máy tự chọn mức phóng to phù hợp.</p>
+          <div class="btnrow" id="rowCountBtns" role="group" aria-label="Số hàng">
+            <span style="font-weight:700;font-size:13px">Số hàng:</span>
+            <button class="zbtn" type="button" data-rowcount="2">2 hàng</button>
+            <button class="zbtn on" type="button" data-rowcount="3">3 hàng</button>
+            <button class="zbtn" type="button" data-rowcount="4">4 hàng</button>
+          </div>
+          <div class="rowbtns" id="rowBtns"></div>
+          <div class="btnrow">
+            <button class="btn secondary" id="nextRowBtn" type="button">Hàng tiếp theo</button>
+          </div>
+          <p class="hint" id="rowHint">Chưa chọn hàng. Bấm một hàng ở trên để quét hàng đó.</p>
         </div>
         <div class="btnrow">
           <button class="btn gold" id="sweepBtn" type="button" disabled>Quét cả lớp: Tắt</button>
+          <button class="btn gold" id="wholeClassBtn" type="button" disabled>Quét cả lớp — chụp ảnh toàn cảnh</button>
           <button class="btn" id="stillBtn" type="button" disabled>Ảnh tĩnh nét cao — phân tích kỹ</button>
+          <button class="btn" id="farScanBtn" type="button" disabled>Quét xa — chụp ảnh nét cao</button>
         </div>
         <div class="btnrow">
           <button class="btn secondary" id="snapClassBtn" type="button" disabled>Chụp nhanh 1 khung hình</button>
@@ -657,7 +690,7 @@ canvas#shot{display:none}
           <div style="margin-top:10px"><button class="btn gold" id="camFallbackBtn" type="button">Chụp bằng máy ảnh của điện thoại</button></div>
         </div>
         <input type="file" id="photoInput" accept="image/*" capture="environment" hidden />
-        <p class="hint" id="sweepStatus">Mở camera rồi bấm “Quét cả lớp”, hoặc bấm “Ảnh tĩnh nét cao” để phân tích một ảnh rõ. Máy quét liên tục; thầy giữ máy yên 2–3 giây cho mỗi góc nhìn để máy kịp nhận hết thẻ trong khung.</p>
+        <p class="hint" id="sweepStatus">Mở camera rồi bấm “Quét cả lớp — chụp ảnh toàn cảnh” để chụp một ảnh rõ cả lớp; hoặc bấm “Quét cả lớp” để quét video liên tục. Học sinh ngồi lung tung vẫn quét được — máy đọc thẻ nào thấy trong khung, không cần theo hàng.</p>
         <p class="seenline" id="seenLine" aria-live="polite"></p>
         <p class="hint" id="frameQuality"></p>
         <div class="sweepbar" aria-hidden="true"><i id="sweepFill" style="width:0%"></i></div>
@@ -1340,27 +1373,58 @@ function parseCsvText(text){
   });
   return rows;
 }
+/* Một ô được coi là tiêu đề cột khi nó đúng là nhãn đó (hoặc bắt đầu bằng
+   nhãn dài như "Họ và tên học sinh") — chứ không phải chỉ chứa từ đó trong
+   tên học sinh (vd. bạn tên "Trần Văn Tên" không phải là tiêu đề). */
+function headerKind(cell){
+  var h = stripDiacritics(cell);
+  if(!h) return "";
+  if(h==="ten") return "name";
+  if(h==="ns" || h==="dob") return "dob";
+  if(h==="stt" || h==="so thu tu") return "stt";
+  var multi = [
+    ["ho va ten hoc sinh","name"],["ho va ten","name"],
+    ["ho ten hoc sinh","name"],["ho ten","name"],["ten hoc sinh","name"],
+    ["ngay thang nam sinh","dob"],["ngay sinh","dob"],["ngay sinh nhat","dob"]
+  ];
+  for(var i=0;i<multi.length;i++){
+    if(h===multi[i][0] || h.indexOf(multi[i][0]+" ")===0) return multi[i][1];
+  }
+  return "";
+}
 function rowsToRoster(rawRows){
   var rows = (rawRows||[]).filter(function(r){
     return r && r.some(function(c){ return String(c==null?"":c).trim()!==""; });
   });
   if(!rows.length) return {rows:[], skipped:0};
-  var first = rows[0].map(function(c){ return stripDiacritics(c); });
-  var nameCol = -1, dobCol = -1, hasHeader = false;
-  first.forEach(function(h, i){
-    if(nameCol<0 && /(^| )(ho ten|ho va ten|ten hoc sinh|ten)( |$)/.test(h)){ nameCol = i; hasHeader = true; }
-    else if(dobCol<0 && /(^| )(ngay sinh|ngay thang nam sinh|dob|ns)( |$)/.test(h)){ dobCol = i; hasHeader = true; }
-  });
-  if(!hasHeader && first.some(function(h){ return h==="stt" || /(^| )so thu tu( |$)/.test(h); })) hasHeader = true;
-  if(nameCol<0) nameCol = 0;
-  if(dobCol<0) dobCol = (rows[0].length>1 ? 1 : -1);
+  /* Tìm dòng tiêu đề cột trong 5 dòng đầu: file danh sách của trường thường
+     có dòng tiêu đề "DANH SÁCH LỚP..." ở trên rồi mới tới dòng tiêu đề cột. */
+  var nameCol = -1, dobCol = -1, hasHeader = false, start = 0, skipped = 0;
+  var scanN = Math.min(5, rows.length);
+  for(var h=0; h<scanN; h++){
+    var nc = -1, dc = -1;
+    rows[h].forEach(function(c, i){
+      var k = headerKind(c);
+      if(k==="name" && nc<0) nc = i;
+      else if(k==="dob" && dc<0) dc = i;
+    });
+    if(nc>=0 || dc>=0){ nameCol = nc; dobCol = dc; hasHeader = true; start = h+1; skipped = h; break; }
+  }
+  if(!hasHeader){
+    nameCol = 0;
+    dobCol = (rows[0].length>1 ? 1 : -1);
+  } else {
+    if(nameCol<0) nameCol = 0;
+    if(dobCol<0) dobCol = -1;
+  }
   if(dobCol===nameCol) dobCol = -1;
-  var start = hasHeader ? 1 : 0;
-  var out = [], skipped = 0;
+  var out = [];
   for(var r=start;r<rows.length;r++){
     var row = rows[r];
     var name = String(row[nameCol]==null?"":row[nameCol]).trim();
     if(!hasHeader) name = name.replace(/^\s*\d+[\.\)]\s*/,"").trim();
+    /* Bỏ dòng tiêu đề cột lặp lại (file dài hay lặp tiêu đề mỗi trang). */
+    if(hasHeader && headerKind(name)==="name"){ skipped++; continue; }
     if(!name){ skipped++; continue; }
     var dob = dobCol>=0 ? normDob(row[dobCol]) : "";
     out.push({name:name, dob:dob});
@@ -1387,7 +1451,7 @@ function renderRosterPreview(){
   if(!pendingRoster){ box.innerHTML=""; actions.style.display="none"; return; }
   var r = pendingRoster;
   var html = '<h3 style="margin-top:16px">Xem trước: đọc được ' + r.rows.length + ' học sinh' +
-    (r.skipped ? ' · bỏ qua ' + r.skipped + ' dòng trống/không có tên' : '') + '</h3>';
+    (r.skipped ? ' · bỏ qua ' + r.skipped + ' dòng (tiêu đề/trống/không có tên)' : '') + '</h3>';
   if(r.rows.length>63){
     html += '<div class="warnbox" style="margin-top:10px">Lớp này có ' + r.rows.length + ' bạn (trên 63): thẻ từ số 64 trở đi không có dãy mã số, quét xong thầy gán tay.</div>';
   }
@@ -1530,6 +1594,13 @@ function cardHtml(s, classNameOverride){
     '<div class="num">'+s.card+'</div><div class="sname">'+esc(s.name)+'</div>' + strip +
     '<div class="foot">THẺ CỐ ĐỊNH · '+esc(classNameOverride||activeClassName()||"TOÁN 12")+'</div></div>';
 }
+/* Cỡ thẻ in: compact (6/A4), large mặc định (4/A4), huge (2/A4),
+   xlarge (1/A4 — cho học sinh hàng cuối, thẻ rộng ~180mm). Dùng chung
+   cho xem trước, trang in và file xuất in. */
+function cardSizeCls(){
+  var v = el("cardSize").value;
+  return v==="compact" ? " compact" : (v==="huge" ? " huge" : (v==="xlarge" ? " xlarge" : ""));
+}
 function renderCards(){
   var grid = el("cardsGrid");
   var printGrid = el("printGrid");
@@ -1537,7 +1608,7 @@ function renderCards(){
   // Thẻ luôn xếp theo số thẻ cố định, để thầy phát đúng số và in đúng thứ tự.
   var ordered = sortedStudents();
   grid.innerHTML = ordered.map(function(s){ return cardHtml(s); }).join("");
-  var sizeCls = el("cardSize").value==="compact" ? " compact" : (el("cardSize").value==="huge" ? " huge" : "");
+  var sizeCls = cardSizeCls();
   if(printAllClasses){
     // Trang in cả các lớp: mỗi lớp một phần riêng, tên lớp làm đầu phần,
     // thẻ xếp theo số cố định trong lớp đó, tên lớp in dưới mỗi thẻ.
@@ -1555,6 +1626,7 @@ function renderCards(){
     printGrid.innerHTML = printList.map(function(s){ return cardHtml(s); }).join("");
     printGrid.classList.toggle("compact", el("cardSize").value==="compact");
     printGrid.classList.toggle("huge", el("cardSize").value==="huge");
+    printGrid.classList.toggle("xlarge", el("cardSize").value==="xlarge");
   }
   var printedCount = ordered.filter(function(s){ return printedCardIds[s.id]; }).length;
   var statusEl = el("printedStatus");
@@ -1573,6 +1645,7 @@ function renderCards(){
   }
   grid.classList.toggle("compact", el("cardSize").value==="compact");
   grid.classList.toggle("huge", el("cardSize").value==="huge");
+  grid.classList.toggle("xlarge", el("cardSize").value==="xlarge");
 }
 function showPrintArea(){
   document.querySelectorAll("section.panel").forEach(function(p){ p.classList.remove("active"); });
@@ -1603,7 +1676,7 @@ el("previewPrintBtn").addEventListener("click", function(){
    renderCards đang hiện (cả các lớp / chỉ thẻ mới / lớp đang chọn).
    Không đổi trạng thái "đã in" khi xuất file. */
 el("exportPrintBtn").addEventListener("click", function(){
-  var sizeCls = el("cardSize").value==="compact" ? " compact" : (el("cardSize").value==="huge" ? " huge" : "");
+  var sizeCls = cardSizeCls();
   var title = "", body = "";
   if(printAllClasses){
     title = "tat-ca-cac-lop";
@@ -1636,6 +1709,7 @@ el("exportPrintBtn").addEventListener("click", function(){
     '.cards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px}',
     '.cards-grid.compact{grid-template-columns:repeat(3,1fr)}',
     '.cards-grid.huge{grid-template-columns:1fr;max-width:620px;margin-left:auto;margin-right:auto}',
+    '.cards-grid.xlarge{grid-template-columns:1fr;max-width:760px;margin-left:auto;margin-right:auto}',
     '.print-class-title{font-size:20px;font-weight:800;margin:6px 0 12px}',
     '.print-class-block{margin-bottom:18px}',
     '.paper-card{position:relative;background:#fff;color:#111;border:5px solid #111;border-radius:14px;aspect-ratio:1/1;padding:9% 7% 7%;text-align:center;overflow:hidden;page-break-inside:avoid}',
@@ -1654,7 +1728,7 @@ el("exportPrintBtn").addEventListener("click", function(){
     '.paper-card .foot{position:absolute;bottom:9%;left:0;right:0;font-size:9.5px;color:#666;letter-spacing:.05em}',
     '.paper-card .cut{position:absolute;top:6%;left:6%;font-size:10px;color:#999}',
     '@page{size:A4;margin:12mm}',
-    '@media print{body{padding:0}.cards-grid{gap:10px}.print-class-block{page-break-before:always}.print-class-block:first-child{page-break-before:auto}.cards-grid.huge .paper-card{width:132mm;justify-self:center}.paper-card{border-radius:10px}}'
+    '@media print{body{padding:0}.cards-grid{gap:10px}.print-class-block{page-break-before:always}.print-class-block:first-child{page-break-before:auto}.cards-grid.huge .paper-card{width:132mm;justify-self:center}.cards-grid.xlarge .paper-card{width:180mm;justify-self:center}.paper-card{border-radius:10px}}'
   ].join("\n");
   var html = '<!DOCTYPE html>\n<html lang="vi">\n<head>\n<meta charset="utf-8">\n<title>Thẻ giấy — ' + esc(title) + '</title>\n<style>\n' + css + '\n</style>\n</head>\n<body>\n' +
     '<p class="print-note">Mở file này rồi bấm Ctrl+P (hoặc Cmd+P) để in hoặc lưu PDF. Nếu ô đen ở góc thẻ và dãy mã số in ra bị trắng, trong hộp thoại In thầy tích thêm “Background graphics” (Đồ họa nền) ở mục More settings. File này in một mình, không cần mạng.</p>\n' +
@@ -2496,6 +2570,7 @@ function renderSweepStatus(){
   var total = students.length;
   el("sweepCount").textContent = "Đã nhận " + got + " / " + total + " học sinh" + (session ? (" — câu " + (session.index+1)) : "");
   el("sweepFill").style.width = total ? Math.round(got/total*100) + "%" : "0%";
+  if(typeof renderRowBtns==="function") renderRowBtns();
   var chips = el("sweepChips");
   if(chips && session){
     chips.innerHTML = sortedStudents().map(function(s){
@@ -2505,7 +2580,7 @@ function renderSweepStatus(){
   } else if(chips){ chips.innerHTML = ""; }
 }
 
-/* ================= Camera: quét cả lớp trong một khung hình =================
+/* ================= Camera: quét theo hàng từ bục giảng =================
    Mỗi khung hình được dò nhiều thẻ cùng lúc:
    1) Ngưỡng thích ứng theo vùng sáng (integral image) để tách thẻ trắng /
       viền đen ngay cả khi một góc lớp sáng hơn góc còn lại.
@@ -2552,6 +2627,8 @@ function stopCamera(){
   el("cam").srcObject = null;
   el("snapClassBtn").disabled = true;
   el("stillBtn").disabled = true;
+  el("farScanBtn").disabled = true;
+  el("wholeClassBtn").disabled = true;
   el("camOffBtn").disabled = true;
   el("sweepBtn").disabled = true;
   el("camOnBtn").disabled = false;
@@ -2641,11 +2718,13 @@ el("camOnBtn").addEventListener("click", function(){
       showCamFallback(false);
       el("snapClassBtn").disabled = false;
       el("stillBtn").disabled = false;
+      el("farScanBtn").disabled = false;
+      el("wholeClassBtn").disabled = false;
       el("camOffBtn").disabled = false;
       el("sweepBtn").disabled = false;
       el("camOnBtn").disabled = true;
       el("zoomRow").classList.add("show");
-      setZoom(1, true);
+      if(scanMode==="rows" && typeof selectRow==="function") selectRow(activeRow, true); else setZoom(1, true);
     }).catch(function(err){
       lastCamErr = err;
       if(err && err.name==="NotAllowedError"){
@@ -2680,6 +2759,113 @@ el("zoomRow").addEventListener("click", function(e){
   if(!b) return;
   setZoom(+b.getAttribute("data-zoom"));
 });
+/* ---- Quét theo hàng (từ bục giảng) ----
+   Thầy đứng trên bục, học sinh cuối lớp cách 8–10m: thẻ 13cm ở 10m
+   chỉ còn ~40px trong khung hình nên không thể quét cả lớp trong một
+   khung. Lớp được chia theo số thẻ cố định (đã xếp theo card): hàng 1
+   là các số thẻ đầu, hàng cuối là các số thẻ cuối, hàng cuối nhận phần
+   dư khi chia không đều. Chế độ này chỉ đổi cách hướng dẫn + zoom +
+   tiến độ theo hàng; logic ghi đáp án (processDetections, recordAnswer,
+   bảng chờ xác nhận) giữ nguyên và không khóa việc ghi thẻ ngoài hàng
+   đang chọn, vì lia máy có thể lọt thẻ hàng khác. */
+var rowCount = 3, activeRow = 0;
+function rowRanges(){
+  var ordered = sortedStudents();
+  var n = ordered.length, rows = Math.max(1, Math.min(rowCount, n||1));
+  var ranges = [], base = Math.floor(n/rows), rem = n%rows, start = 0;
+  for(var i=0;i<rows;i++){
+    var len = base + (i===rows-1 ? rem : 0);
+    ranges.push({index:i, cards: ordered.slice(start, start+len).map(function(s){ return s.card; }), students: ordered.slice(start, start+len)});
+    start += len;
+  }
+  return ranges;
+}
+function rowProgress(r){
+  if(!session) return {got:0, total:r.students.length};
+  var ans = currentAnswers();
+  var got = r.students.filter(function(s){ return ans[s.id]; }).length;
+  return {got:got, total:r.students.length};
+}
+function rowZoomFor(i, rows){
+  if(i===0) return 1;
+  if(i===rows-1) return 3;
+  return 1.5;
+}
+function renderRowBtns(){
+  var box = el("rowBtns"); if(!box) return;
+  var ranges = rowRanges();
+  box.innerHTML = ranges.map(function(r){
+    var p = rowProgress(r);
+    var label = "Hàng " + (r.index+1) + (r.index===ranges.length-1 ? " (xa nhất)" : (r.index===0 ? " (gần nhất)" : "")) +
+      " — thẻ " + (r.cards.length ? r.cards[0] + "–" + r.cards[r.cards.length-1] : "—") +
+      " — đã nhận " + p.got + "/" + p.total;
+    return '<button class="rowbtn' + (r.index===activeRow ? " on" : "") + (p.total && p.got>=p.total ? " done" : "") + '" type="button" data-row="' + r.index + '">' + esc(label) + '</button>';
+  }).join("") || '<p class="hint">Chưa có học sinh. Thêm ở phần “Lớp học”.</p>';
+  var cur = ranges[activeRow] || ranges[0];
+  if(cur){
+    el("rowHint").textContent = "Đang quét hàng " + (cur.index+1) + " (thẻ " + (cur.cards.length ? cur.cards[0] + "–" + cur.cards[cur.cards.length-1] : "—") + ") ở " + rowZoomFor(cur.index, ranges.length) + "× — đưa hàng này vào giữa khung, giữ yên 2–3 giây.";
+  }
+}
+function selectRow(i, silent){
+  var ranges = rowRanges();
+  if(!ranges.length) return;
+  activeRow = Math.max(0, Math.min(i, ranges.length-1));
+  var z = rowZoomFor(activeRow, ranges.length);
+  setZoom(z, true);
+  renderRowBtns();
+  if(!silent){
+    var cur = ranges[activeRow];
+    el("sweepStatus").textContent = "Đang quét hàng " + (activeRow+1) + " (thẻ " + (cur.cards.length ? cur.cards[0] + "–" + cur.cards[cur.cards.length-1] : "—") + ") ở " + z + "× — đưa hàng này vào giữa khung, giữ yên 2–3 giây.";
+  }
+}
+function nextRow(){
+  var ranges = rowRanges();
+  if(!ranges.length) return;
+  for(var k=1;k<=ranges.length;k++){
+    var i = (activeRow+k)%ranges.length;
+    var p = rowProgress(ranges[i]);
+    if(p.got<p.total){ selectRow(i); return; }
+  }
+  el("sweepStatus").textContent = "Đã nhận đủ cả lớp rồi. Thầy bấm “Câu tiếp theo” để sang câu sau, hoặc dừng quét.";
+}
+el("rowBtns").addEventListener("click", function(e){
+  var b = e.target.closest("[data-row]");
+  if(!b) return;
+  selectRow(+b.getAttribute("data-row"));
+});
+el("nextRowBtn").addEventListener("click", function(){ nextRow(); });
+document.querySelectorAll("[data-rowcount]").forEach(function(b){
+  b.addEventListener("click", function(){
+    rowCount = +b.getAttribute("data-rowcount");
+    document.querySelectorAll("[data-rowcount]").forEach(function(x){ x.classList.toggle("on", x===b); });
+    activeRow = 0;
+    renderRowBtns();
+  });
+});
+renderRowBtns();
+/* ---- Chế độ quét: cả lớp (mặc định) hay theo hàng ----
+   Học sinh ngồi lung tung thì số thẻ không khớp chỗ ngồi, chia theo
+   số thẻ để quét từng hàng là sai thực tế. Chế độ "Cả lớp" không
+   khóa thẻ theo hàng đang chọn (vốn dĩ processDetections cũng không
+   khóa), chỉ ẩn khối hàng, về zoom 1× để thấy toàn khung, và dùng
+   nút chụp ảnh toàn cảnh. Chế độ "Theo hàng" chỉ hiện lại khối hàng
+   cũ cho lớp nào ngồi đúng theo hàng. */
+var scanMode = "whole";
+function setScanMode(m){
+  scanMode = (m==="rows") ? "rows" : "whole";
+  document.querySelectorAll("[data-scanmode]").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-scanmode")===scanMode); });
+  var rb = el("rowBlock"); if(rb) rb.style.display = scanMode==="rows" ? "" : "none";
+  if(scanMode==="whole"){
+    setZoom(1, true);
+    el("sweepStatus").textContent = "Đang quét cả lớp, không theo hàng — học sinh ngồi ở đâu máy cũng đọc thẻ đó trong khung. Bấm “Quét cả lớp — chụp ảnh toàn cảnh” để chụp một ảnh rõ, hoặc bấm “Quét cả lớp” để quét video liên tục.";
+  } else {
+    selectRow(activeRow, true);
+  }
+}
+document.querySelectorAll("[data-scanmode]").forEach(function(b){
+  b.addEventListener("click", function(){ setScanMode(b.getAttribute("data-scanmode")); });
+});
+setScanMode("whole");
 el("sweepBtn").addEventListener("click", function(){
   if(!stream){ el("sweepStatus").textContent = "Mở camera trước đã."; return; }
   if(sweepOn){ stopSweep(); return; }
@@ -2750,7 +2936,7 @@ function processDetections(dets, srcW, srcH, mode){
     var smallest = Math.min.apply(null, dets.map(function(d){ return d.bbox.w/srcW; }));
     seenEl.textContent = "Đang thấy trong khung: " + dets.map(function(d){
       return "#" + (d.number!=null ? d.number : "?") + " " + d.letter + (d.confident ? "" : " (?)");
-    }).join(" · ") + (smallest<0.10 ? " — thẻ còn nhỏ, tiến lại gần hơn hoặc phóng to 1,5–2×." : "");
+    }).join(" · ") + (smallest<0.10 ? " — thẻ còn nhỏ, phóng to 2–3×, hoặc bấm “Quét cả lớp — chụp ảnh toàn cảnh” ở gần hơn." : "");
   } else if(isLive){
     // Tay rung làm thẻ mất khỏi khung 1–2 nhịp: giữ khung cũ thêm 1,2 giây
     // thay vì xóa ngay, để thầy không tưởng máy mất thẻ.
@@ -2930,9 +3116,11 @@ function cloneCanvas(c){
   return n;
 }
 function nextTick(){ return new Promise(function(r){ setTimeout(r, 0); }); }
-function analyzeStill(source){
+/* ww: độ rộng làm việc của lần dò toàn khung (mặc định 768); quét xa
+   truyền 1024 để thẻ ở hàng cuối còn đủ điểm ảnh đọc dãy mã số. */
+function analyzeStill(source, ww, tileW){
   var dets = [];
-  try{ dets = detectCardsInCanvas(source, {workWidth:768}); }catch(e){ dets = []; }
+  try{ dets = detectCardsInCanvas(source, {workWidth: ww||768}); }catch(e){ dets = []; }
   if(source.width<700 || source.height<500) return Promise.resolve(dets);
   var tw = Math.ceil(source.width*0.6), th = Math.ceil(source.height*0.6);
   var origins = [{x:0,y:0},{x:source.width-tw,y:0},{x:0,y:source.height-th},{x:source.width-tw,y:source.height-th}];
@@ -2943,7 +3131,42 @@ function analyzeStill(source){
         var tile = document.createElement("canvas"); tile.width = tw; tile.height = th;
         tile.getContext("2d").drawImage(source, o.x, o.y, tw, th, 0, 0, tw, th);
         var td = [];
-        try{ td = detectCardsInCanvas(tile, {workWidth:640}); }catch(e){ td = []; }
+        try{ td = detectCardsInCanvas(tile, {workWidth: tileW||640}); }catch(e){ td = []; }
+        td.forEach(function(d){
+          d.bbox = {x:d.bbox.x+o.x, y:d.bbox.y+o.y, w:d.bbox.w, h:d.bbox.h};
+          dets.push(d);
+        });
+      });
+    });
+  });
+  return chain.then(function(){ return dedupeDets(dets); });
+}
+/* ---- Phân tích ảnh toàn cảnh cho lớp ngồi lung tung ----
+   Học sinh ngồi rải rác khắp khung hình, không theo hàng, nên 4 vùng
+   góc của analyzeStill có thể bỏ sót thẻ ở giữa. Bản này dò toàn
+   khung ở 1024px rồi dò thêm 6 vùng chồng lấn (3 cột × 2 hàng, mỗi
+   vùng rộng 50% khung, cao 60% khung) ở 1024px — thẻ ở bất cứ chỗ
+   nào trong khung cũng lọt vào ít nhất một vùng đủ lớn để đọc dãy
+   mã. Gộp trùng bằng dedupeDets như analyzeStill. Kết quả cộng dồn:
+   runStillAnalysis / processDetections không xóa đáp án đã ghi, nên
+   thầy chụp thêm ảnh ở vị trí khác thì chỉ thêm thẻ còn thiếu. */
+function analyzeWholeClass(source){
+  var dets = [];
+  try{ dets = detectCardsInCanvas(source, {workWidth:1024}); }catch(e){ dets = []; }
+  if(source.width<700 || source.height<500) return Promise.resolve(dets);
+  var tw = Math.ceil(source.width*0.5), th = Math.ceil(source.height*0.6);
+  var origins = [
+    {x:0, y:0}, {x:Math.round(source.width*0.25), y:0}, {x:source.width-tw, y:0},
+    {x:0, y:source.height-th}, {x:Math.round(source.width*0.25), y:source.height-th}, {x:source.width-tw, y:source.height-th}
+  ];
+  var chain = Promise.resolve();
+  origins.forEach(function(o){
+    chain = chain.then(function(){
+      return nextTick().then(function(){
+        var tile = document.createElement("canvas"); tile.width = tw; tile.height = th;
+        tile.getContext("2d").drawImage(source, o.x, o.y, tw, th, 0, 0, tw, th);
+        var td = [];
+        try{ td = detectCardsInCanvas(tile, {workWidth:1024}); }catch(e){ td = []; }
         td.forEach(function(d){
           d.bbox = {x:d.bbox.x+o.x, y:d.bbox.y+o.y, w:d.bbox.w, h:d.bbox.h};
           dets.push(d);
@@ -3003,12 +3226,14 @@ function mergeConflictingDets(dets){
 function dedupeDets(dets){
   return mergeConflictingDets(dets);
 }
-function runStillAnalysis(sourceCanvas, doneMsg){
+function runStillAnalysis(sourceCanvas, doneMsg, ww, tileW, analyzer){
   if(stillBusy) return;
   stillBusy = true;
   el("stillBtn").disabled = true; el("reanalyzeBtn").disabled = true;
+  if(el("farScanBtn")) el("farScanBtn").disabled = true;
+  if(el("wholeClassBtn")) el("wholeClassBtn").disabled = true;
   el("sweepStatus").textContent = "Đang phân tích ảnh nét cao… giữ nguyên tư thế, máy dò từng vùng, mất vài giây.";
-  analyzeStill(sourceCanvas).then(function(dets){
+  (analyzer ? analyzer(sourceCanvas) : analyzeStill(sourceCanvas, ww, tileW)).then(function(dets){
     showPhotoThumb(sourceCanvas, dets);
     sweepQuestion = session.index; pendingDets = []; detHistory = {}; posHistory = {};
     processDetections(dets, sourceCanvas.width, sourceCanvas.height, "still");
@@ -3018,7 +3243,7 @@ function runStillAnalysis(sourceCanvas, doneMsg){
     el("scanResult").innerHTML = '<div class="errbox">Phân tích ảnh gặp lỗi. Thầy dùng bảng ghi tay nhanh ở trên — không cần chụp lại.</div>';
   }).then(function(){
     stillBusy = false;
-    if(stream) el("stillBtn").disabled = false;
+    if(stream){ el("stillBtn").disabled = false; if(el("farScanBtn")) el("farScanBtn").disabled = false; if(el("wholeClassBtn")) el("wholeClassBtn").disabled = false; }
   });
 }
 el("stillBtn").addEventListener("click", function(){
@@ -3041,6 +3266,62 @@ el("stillBtn").addEventListener("click", function(){
   lastStillCanvas = cloneCanvas(full);
   el("reanalyzeBtn").disabled = false;
   runStillAnalysis(full, "Đã phân tích xong ảnh tĩnh nét cao. Thẻ đọc chắc đã tự ghi; thẻ chưa chắc hiện ở dưới để thầy xác nhận, còn lại ghi tay nhanh ở trên.");
+});
+/* ---- Quét xa: chụp ảnh ở độ phân giải gốc tối đa của camera ----
+   Hàng cuối cách 8–10m: thẻ trong khung video 1280px chỉ còn ~40px,
+   dãy mã số không đọc được. Nút này chụp thẳng từ video ở độ phân
+   giải gốc (tới 4000px ngang, giữ đúng vùng phóng to đang chọn) rồi
+   dò ở workWidth 1024 thay vì 384/768 — thẻ hàng cuối giữ được chi
+   tiết để đọc mã số. Kết quả hiện như ảnh tĩnh: ô đã nhận, thẻ chưa
+   chắc để xác nhận, còn lại ghi tay nhanh. */
+el("farScanBtn").addEventListener("click", function(){
+  var video = el("cam");
+  if(!stream || !video.videoWidth || video.readyState<2){
+    el("camMsg").textContent = "Camera chưa sẵn sàng. Thầy mở camera và đợi hình hiện lên rồi chụp lại.";
+    return;
+  }
+  if(!ensureSession()) return;
+  if(stillBusy) return;
+  var vw = video.videoWidth, vh = video.videoHeight;
+  var sc = Math.min(1, 4000/vw);
+  var canvas = document.createElement("canvas");
+  canvas.width = Math.round(vw*sc); canvas.height = Math.round(vh*sc);
+  var ctx = canvas.getContext("2d", {willReadFrequently:true});
+  var sw = vw, sh = vh, sx = 0, sy = 0;
+  if(captureZoom>1){ sw = vw/captureZoom; sh = vh/captureZoom; sx = (vw-sw)/2; sy = (vh-sh)/2; }
+  ctx.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+  lastStillCanvas = cloneCanvas(canvas);
+  el("reanalyzeBtn").disabled = false;
+  el("sweepStatus").textContent = "Đang phân tích ảnh quét xa ở độ phân giải cao (" + canvas.width + "×" + canvas.height + ") — dò ở 1024px rồi dò từng vùng, mất vài giây.";
+  runStillAnalysis(canvas, "Đã phân tích xong ảnh quét xa. Thẻ đọc chắc đã tự ghi; thẻ chưa chắc hiện ở dưới để thầy xác nhận, còn lại ghi tay nhanh ở trên.", 1024, 1024);
+});
+/* ---- Quét cả lớp (ngồi lung tung): chụp ảnh toàn cảnh, không cắt zoom ----
+   Khác nút "Quét xa": nút này KHÔNG cắt theo mức phóng to đang chọn
+   mà luôn chụp toàn khung ở 1×, độ phân giải gốc tới 4000px ngang,
+   rồi phân tích bằng analyzeWholeClass (toàn khung + 6 vùng chồng
+   lấn). Học sinh ngồi ở đâu trong khung cũng được đọc, không cần
+   theo hàng. Kết quả cộng dồn với các ảnh trước: thầy chụp thêm
+   1–2 ảnh ở giữa lớp / cuối lớp thì chỉ thêm thẻ còn thiếu, thẻ đã
+   nhận không bị ghi đè hay quét lại. */
+el("wholeClassBtn").addEventListener("click", function(){
+  var video = el("cam");
+  if(!stream || !video.videoWidth || video.readyState<2){
+    el("camMsg").textContent = "Camera chưa sẵn sàng. Thầy mở camera và đợi hình hiện lên rồi chụp lại.";
+    return;
+  }
+  if(!ensureSession()) return;
+  if(stillBusy) return;
+  setZoom(1, true);
+  var vw = video.videoWidth, vh = video.videoHeight;
+  var sc = Math.min(1, 4000/vw);
+  var canvas = document.createElement("canvas");
+  canvas.width = Math.round(vw*sc); canvas.height = Math.round(vh*sc);
+  var ctx = canvas.getContext("2d", {willReadFrequently:true});
+  ctx.drawImage(video, 0, 0, vw, vh, 0, 0, canvas.width, canvas.height);
+  lastStillCanvas = cloneCanvas(canvas);
+  el("reanalyzeBtn").disabled = false;
+  el("sweepStatus").textContent = "Đang phân tích ảnh toàn cảnh (" + canvas.width + "×" + canvas.height + ") — dò toàn khung rồi dò 6 vùng chồng lấn, mất vài giây. Kết quả cộng dồn với các ảnh trước, thẻ đã nhận không cần quét lại.";
+  runStillAnalysis(canvas, "Đã phân tích xong ảnh toàn cảnh. Thẻ đọc chắc đã tự ghi; thẻ chưa chắc hiện ở dưới để thầy xác nhận, còn thiếu thì chụp thêm 1 ảnh ở giữa/cuối lớp hoặc ghi tay nhanh ở trên.", 1024, 1024, analyzeWholeClass);
 });
 el("reanalyzeBtn").addEventListener("click", function(){
   if(!lastStillCanvas || !ensureSession()) return;
